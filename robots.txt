@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://snorkledubs.github.io/sitemap.xml

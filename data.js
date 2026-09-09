@@ -25,9 +25,13 @@ const SITE = {
 };
 
 const ABOUT = `
-I'm a developer who likes low-level work: reverse engineering, driver
-development, hardware interfacing, and automation. This site collects the
-projects I'm proud of. Edit this paragraph in <code>data.js</code>.
+I write things that live below the OS. Kernel drivers, hypervisor
+substrates, and the small utilities that make a Windows box behave
+the way I need it to. When I'm not doing that I'm reading someone
+else's binary in Ghidra to see how it works.
+<br><br>
+Most of what I've built is on those screens. The rest lives in
+private repos where it belongs.
 `;
 
 const SKILLS = [
@@ -38,9 +42,9 @@ const SKILLS = [
 
 // Newest first. `when` is free text.
 const TIMELINE = [
-  { when: "2026", title: "PCIe / DMA research", where: "Independent", desc: "Custom FPGA firmware, memory-access tooling, and driver work on Windows." },
-  { when: "2025", title: "Reverse engineering & drivers", where: "Independent", desc: "Kernel-mode development, hypervisor experiments, and game-client analysis." },
-  { when: "2024", title: "Started building tools", where: "", desc: "Python and C++ utilities, automation, and the first hardware projects." },
+  { when: "2026", title: "hv-drop", where: "Independent", desc: "Built a bare-metal hypervisor substrate for Windows 11: signed driver, test-signing provisioning, and a one-shot deploy that leaves a fresh box ready to boot into it." },
+  { when: "2025", title: "Kernel-mode research", where: "Independent", desc: "Deep-dive into the NT executive: memory manager, object manager, process/thread state, driver dispatch. Wrote a lot of code just to prove I understood the pieces." },
+  { when: "2024", title: "Reverse engineering", where: "Independent", desc: "Ghidra, WinDbg, and enough coffee to figure out how other people's code actually works, not just what the docs say." },
 ];
 
 // Writeups. `url` can be a page in this repo (e.g. "posts/dma-notes.html") or external.
@@ -60,23 +64,6 @@ const PROJECTS = [
     repo: "",
     demo: "",
     featured: true,
-  },
-  {
-    title: "KEVLAR",
-    description: "Kernel driver mirroring the Windows NT API surface — ex, io, ke, mm, nt, ob, ps, rtl — with a matching core of loader, memory, object, process, registry, and diagnostics subsystems. Written to explore how the pieces of a real driver stack fit together.",
-    tags: ["C++", "Kernel", "Windows internals"],
-    image: "",
-    repo: "",
-    demo: "",
-    featured: true,
-  },
-  {
-    title: "WanAnimate",
-    description: "Local Wan2.2-Animate-14B character animation on an AMD RX 9070 XT running ROCm on Windows. One .bat launches ComfyUI with the workflows pre-wired; drop in a still and a motion clip, get a rendered performance.",
-    tags: ["Python", "AI", "AMD ROCm", "ComfyUI"],
-    image: "",
-    repo: "",
-    demo: "",
   },
 ];
 
@@ -138,12 +125,13 @@ const HOUSE = {
 //  Text on the screens comes from the sections above, plus these.
 // ============================================================
 const EDUCATION = [
-  { title: "[Degree or course]", where: "[School]", when: "[Years]", desc: "Relevant coursework, thesis, or awards. Delete this entry if you'd rather not list any." },
+  { title: "Self-taught, mostly", where: "The internet + a lot of blue screens", when: "ongoing", desc: "Windows internals, PCIe, kernel dev, reverse engineering. Learned by breaking things until they worked, then breaking them a different way." },
 ];
 
 const HOBBIES = `
-Games, hardware, and taking things apart to see why they work.
-Edit this in <code>data.js</code>, three lines max.
+Games where I can push the engine sideways.
+Building small boxes that do one weird thing well.
+Reading disassembly like other people read novels.
 `;
 
 // What Azal says when a TV is opened. {name} is replaced with the avatar name.
