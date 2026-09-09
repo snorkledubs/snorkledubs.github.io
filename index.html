@@ -14,12 +14,13 @@
 </head>
 <body>
 <canvas id="gl"></canvas>
+<div id="loading">TUNING<span>...</span></div>
 <noscript><div class="nogl">This page needs JavaScript. <a href="classic.html">Plain version</a></div></noscript>
 <div id="nogl" class="nogl" hidden>Your browser couldn't start WebGL. <a href="classic.html">Open the plain version</a></div>
 <div id="vig"></div><div id="scan"></div>
 <div id="dot"></div>
 <div id="label"></div>
-<div id="hint">MOUSE: LOOK · CLICK A TV · L: LOOK MODE</div>
+<div id="hint">MOUSE: LOOK · CLICK A TV TO WATCH · L: LOOK MODE</div>
 <div id="mode"></div>
 <div id="topL"><button class="btn" id="bCust">Customize Azal</button></div>
 <div id="topR"><button class="btn" id="bSnd">Sound: on</button><a class="btn" href="classic.html">Plain</a></div>
@@ -39,6 +40,13 @@
 </div>
 
 <div id="panel"><button class="btn x" id="bClose">Esc</button><div id="pBody"></div></div>
+
+<div id="remote" hidden aria-label="Remote control">
+  <button data-r="power" title="Turn off (Esc)">&#9211;</button>
+  <div class="rrow"><button data-r="chdn" title="Previous TV (up arrow)">CH&minus;</button><button data-r="chup" title="Next TV (down arrow)">CH+</button></div>
+  <div class="rrow"><button data-r="prev" title="Previous page (left arrow)">&#9664;</button><button data-r="ok" title="Open link / continue (Enter)">OK</button><button data-r="next" title="Next page (right arrow)">&#9654;</button></div>
+  <button data-r="txt" title="Read as text (T)">TXT</button>
+</div>
 
 <div id="dlg"><canvas id="face" width="200" height="200"></canvas><div id="txt"></div><div id="more">▼</div></div>
 

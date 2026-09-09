@@ -73,6 +73,7 @@
 }
 
 /* Room UI */
+[hidden]{display:none!important}
 html,body{margin:0;height:100%;background:#07090f;overflow:hidden;font-family:'VT323',monospace;color:#e6e2d6;cursor:none}
   #panel,#panel *,#cust,#cust *,#topL *,#topR *{cursor:auto!important}
   a{color:#8ef59a}a:hover{color:#fff}
@@ -126,3 +127,19 @@ html,body{margin:0;height:100%;background:#07090f;overflow:hidden;font-family:'V
 #topR a.btn{text-decoration:none}
 .nogl{position:fixed;inset:0;display:grid;place-items:center;background:#07090f;color:#e6e2d6;font-family:'VT323',monospace;font-size:28px;z-index:99;text-align:center;padding:20px}
 .nogl[hidden]{display:none}
+
+/* remote */
+#remote{position:fixed;right:24px;bottom:240px;width:132px;background:#1b1b20;border:3px solid #000;box-shadow:0 0 0 3px #3a3a42,6px 6px 0 #000;padding:10px;display:flex;flex-direction:column;gap:8px;z-index:6;cursor:auto}
+#remote *{cursor:pointer}
+#remote button{font-family:'Press Start 2P',monospace;font-size:9px;background:#2b2b31;color:#e6e2d6;border:2px solid #000;box-shadow:inset 0 -3px 0 #111,2px 2px 0 #000;padding:9px 6px;flex:1;line-height:1}
+#remote button:active{box-shadow:inset 0 2px 0 #111;transform:translate(1px,1px)}
+#remote button:hover{background:#3a3a42}
+#remote [data-r=power]{background:#8a2a2a;color:#fff}
+#remote [data-r=ok]{background:#2a6a3a;color:#fff}
+#remote [data-r=txt]{color:#b9b4a6;font-size:8px}
+.rrow{display:flex;gap:6px}
+/* loading */
+#loading{position:fixed;inset:0;background:#07090f;display:grid;place-items:center;font-family:'Press Start 2P',monospace;font-size:14px;color:#8ef59a;letter-spacing:2px;z-index:80;transition:opacity .5s;pointer-events:none}
+#loading.off{opacity:0}
+#loading span{animation:blink 1s steps(2) infinite}
+@media (max-width:700px){#remote{right:10px;bottom:auto;top:70px;width:112px;padding:6px}#remote button{padding:8px 4px;font-size:8px}}

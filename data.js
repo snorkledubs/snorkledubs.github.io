@@ -21,7 +21,7 @@ const SITE = {
   // Photo/avatar. Put a file in assets/ and reference it, or leave "".
   avatar: "",
   // Set to true when you're ready to show the PROJECTS list below.
-  showProjects: false,
+  showProjects: true,
 };
 
 const ABOUT = `
@@ -53,34 +53,27 @@ const BLOG = [
 // Tags power the filter bar. `featured: true` gets a highlighted card.
 const PROJECTS = [
   {
-    title: "DMA Engine",
-    description: "Direct-memory-access research toolkit for reading and writing physical memory over PCIe with a custom FPGA firmware.",
-    tags: ["C++", "Hardware", "PCIe"],
-    image: "",                       // e.g. "assets/dma.png"
-    repo: "https://github.com/snorkledubs/dma-engine",
+    title: "hv-drop",
+    description: "Bare-metal hypervisor substrate for Windows 11. A signed kernel driver installed as a demand-start service, with a one-shot deployment batch that provisions the test-signing cert, boot config, and BSOD-readable crash settings on a fresh box.",
+    tags: ["C", "Kernel", "Hypervisor", "Windows"],
+    image: "",
+    repo: "",
     demo: "",
     featured: true,
   },
   {
-    title: "Proxy Picker",
-    description: "Scores and rotates proxies by latency and reliability, with a small dashboard for live status.",
-    tags: ["Python", "Networking"],
+    title: "KEVLAR",
+    description: "Kernel driver mirroring the Windows NT API surface — ex, io, ke, mm, nt, ob, ps, rtl — with a matching core of loader, memory, object, process, registry, and diagnostics subsystems. Written to explore how the pieces of a real driver stack fit together.",
+    tags: ["C++", "Kernel", "Windows internals"],
     image: "",
     repo: "",
     demo: "",
+    featured: true,
   },
   {
-    title: "Firmware Project",
-    description: "Custom firmware builds with automated flashing and verification scripts.",
-    tags: ["C", "Firmware", "Hardware"],
-    image: "",
-    repo: "",
-    demo: "",
-  },
-  {
-    title: "Overwatch Tooling",
-    description: "Game-adjacent utilities: overlays, stat tracking, and configuration helpers.",
-    tags: ["C++", "Windows"],
+    title: "WanAnimate",
+    description: "Local Wan2.2-Animate-14B character animation on an AMD RX 9070 XT running ROCm on Windows. One .bat launches ComfyUI with the workflows pre-wired; drop in a still and a motion clip, get a rendered performance.",
+    tags: ["Python", "AI", "AMD ROCm", "ComfyUI"],
     image: "",
     repo: "",
     demo: "",
