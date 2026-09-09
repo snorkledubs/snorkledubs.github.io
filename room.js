@@ -3,14 +3,14 @@ import * as THREE from './vendor/three.module.js';
 /* ---------- loading screen: random subtitle before first paint ---------- */
 {
   const SUBS=[
-    "CH ∅∅ · WARMING UP",
-    "CH ∅∅ · SIGNAL LOCK",
-    "CH ∅∅ · ADJUSTING RABBIT EARS",
-    "CH ∅∅ · DEGAUSSING",
-    "CH ∅∅ · CHECKING THE STRAPS",
-    "CH ∅∅ · TAKING A LOOK AT YOU",
-    "CH ∅∅ · LOADING PILLS",
-    "CH ∅∅ · PLEASE HOLD",
+    "CH 00 · WARMING UP",
+    "CH 00 · SIGNAL LOCK",
+    "CH 00 · ADJUSTING RABBIT EARS",
+    "CH 00 · DEGAUSSING",
+    "CH 00 · CHECKING THE STRAPS",
+    "CH 00 · TAKING A LOOK AT YOU",
+    "CH 00 · LOADING PILLS",
+    "CH 00 · PLEASE HOLD",
   ];
   const el=document.getElementById('loadingSub');
   if(el) el.textContent=SUBS[Math.floor(Math.random()*SUBS.length)];
@@ -1146,7 +1146,10 @@ const CATS=(()=>{
         else if(name==='zelda'){
           const dx=(0-cat.group.position.x),dz=(1.7-cat.group.position.z);const d=Math.hypot(dx,dz);
           if(d>0.4){const sp=0.7*dt;cat.group.position.x+=(dx/d)*sp;cat.group.position.z+=(dz/d)*sp;cat.group.rotation.y=Math.atan2(dx,dz)+Math.PI}
-          else{if(Math.random()<0.01){nyf(880);say([{mood:'chill',text:'zelda dropped something at your feet'},{mood:'lazy',text:'oh — she brought you an addy. cute.'}])}}
+          else if(now-(cat.lastAddy||0)>240 && Math.random()<0.003){
+            cat.lastAddy=now; nyf(880);
+            say([{mood:'chill',text:'zelda dropped something at your feet'},{mood:'lazy',text:'oh — she brought you an addy. cute.'}]);
+          }
         }
       }
     });
