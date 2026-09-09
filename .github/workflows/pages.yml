@@ -1,0 +1,66 @@
+name: Build and deploy the room
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build room.bundle.js
+        run: |
+          npx --yes esbuild@0.24.2 room.js \
+            --bundle \
+            --format=esm \
+            --minify \
+            --target=es2020 \
+            --legal-comments=none \
+            --outfile=room.bundle.js
+          ls -la room.bundle.js
+
+      - name: Stage site
+        run: |
+          mkdir _site
+          rsync -a \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude="_site" \
+            --exclude="vendor" \
+            --exclude="node_modules" \
+            --exclude="scratchpad" \
+            --exclude="package.json" \
+            --exclude="package-lock.json" \
+            ./ _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

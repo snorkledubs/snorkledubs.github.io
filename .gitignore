@@ -1,4 +1,5 @@
 node_modules/
-Thumbs.db
+_site/
 .DS_Store
-*.bak
+Thumbs.db
+*.log
