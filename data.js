@@ -11,7 +11,7 @@ const SITE = {
   email: "snorkledubs@gmail.com",
   // Any of these can be removed or left as "".
   links: {
-    github: "https://github.com/AzalsStuff",
+    github: "https://github.com/snorkledubs",
     linkedin: "",
     twitter: "",
     resume: "",            // e.g. "assets/resume.pdf"
@@ -42,7 +42,7 @@ const PROJECTS = [
     description: "Direct-memory-access research toolkit for reading and writing physical memory over PCIe with a custom FPGA firmware.",
     tags: ["C++", "Hardware", "PCIe"],
     image: "",                       // e.g. "assets/dma.png"
-    repo: "https://github.com/AzalsStuff/dma-engine",
+    repo: "https://github.com/snorkledubs/dma-engine",
     demo: "",
     featured: true,
   },
