@@ -91,3 +91,43 @@ html,body{margin:0;height:100%;background:#07090f;overflow:hidden;font-family:'V
 #loading .ls{font-size:10px;color:#a09984;letter-spacing:1px}
 #loading span{animation:blink 1s steps(2) infinite}
 @media (max-width:700px){#remote{right:10px;bottom:auto;top:70px;width:112px;padding:6px}#remote button{padding:8px 4px;font-size:8px}}
+
+/* ---------- mobile / touch ---------- */
+@media (max-width:700px), (pointer:coarse){
+  html,body{cursor:auto}
+  /* top hint moved out of the way of the top buttons */
+  #hint{top:70px;font-size:8px;left:0;right:0;transform:none;padding:0 20px;letter-spacing:1px;text-align:center;white-space:normal}
+  #mode{display:none}
+  /* top buttons: smaller so all three fit on a phone */
+  #topL,#topR{top:10px;gap:6px}
+  #topL{left:8px} #topR{right:8px}
+  #topL .btn,#topR .btn{padding:9px 8px;font-size:8px;letter-spacing:0;box-shadow:2px 2px 0 #000}
+  /* dialog: full-width bottom sheet */
+  #dlg{left:8px;right:8px;bottom:8px;width:auto;max-width:none;padding:10px 12px;gap:10px;transform:none}
+  #txt{font-size:22px;line-height:1.35}
+  #face{width:64px;height:64px}
+  #more{font-size:14px}
+  /* customizer: full-width bottom sheet, scrollable */
+  #cust{left:0;right:0;top:auto;bottom:0;width:100%;box-sizing:border-box;
+        max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+        border-width:3px;border-top:4px solid #fff;padding:14px 16px 32px;z-index:20}
+  #cust h3{font-size:11px;margin:12px 0 6px}
+  #cust #prev{display:block;margin:0 auto 4px}
+  #cust input[type=range]{height:38px}
+  #cust input[type=text]{font-size:22px;padding:8px 10px}
+  .sw button{width:34px;height:34px}
+  .seg button{padding:10px 6px;font-size:18px;min-height:44px}
+  /* remote: floating flex bar along the bottom */
+  #remote{left:8px;right:8px;top:auto;bottom:8px;width:auto;padding:8px;
+          display:flex;flex-direction:row;gap:6px;z-index:12;align-items:stretch}
+  #remote.on{display:flex}
+  #remote .rrow{display:contents}
+  #remote button{flex:1 1 0;padding:12px 4px;font-size:9px;min-height:44px}
+  #remote [data-r=txt]{display:none}
+  /* watch-mode panel: full sheet above the remote */
+  #panel{left:8px;right:8px;top:60px;bottom:80px;width:auto}
+  /* room canvas fills but touch actions need to be manipulated */
+  #gl{touch-action:none}
+  /* CTA arrows fit */
+  #dot{transform:scale(.7)}
+}

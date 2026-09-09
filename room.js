@@ -15,6 +15,11 @@ import * as THREE from './vendor/three.module.js';
   const el=document.getElementById('loadingSub');
   if(el) el.textContent=SUBS[Math.floor(Math.random()*SUBS.length)];
 }
+// touch devices get a different top hint
+if(matchMedia('(pointer:coarse)').matches){
+  const h=document.getElementById('hint');
+  if(h) h.textContent='TAP A TV · DRAG TO LOOK';
+}
 
 /* ---------- content (from data.js) ---------- */
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -792,6 +797,21 @@ function fireAdder(){
 let started=false;
 function intro(){if(started)return;started=true;setTimeout(()=>say((SAY.intro||["Hey. I'm {name}."]).map(l=>l.replace(/\{name\}/g,AV.name))),600);scheduleAdder()}
 addEventListener('pointerdown',intro,{once:true});addEventListener('keydown',intro,{once:true});
+/* konami: ↑↑↓↓←→←→BA — one-time secret */
+{
+  const K=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let idx=0;
+  addEventListener('keydown',e=>{
+    const k=e.key.length===1?e.key.toLowerCase():e.key;
+    if(k===K[idx]){idx++;if(idx===K.length){idx=0;
+      say([
+        {mood:'spaced',text:'oh you know it huh'},
+        {mood:'spaced',text:'here — half a pill, on the house'},
+        {mood:'lazy',  text:'dont say i never gave you anything'},
+      ]);
+    }} else idx=(k===K[0])?1:0;
+  });
+}
 setTimeout(intro,2500);
 
 /* loop */
