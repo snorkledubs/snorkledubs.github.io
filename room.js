@@ -518,6 +518,27 @@ box(0.08,3.0,0.08,railM,3.3,1.5,-3.6);
   });
 }
 
+/* interactive whiteboard: draw on the wall, saved per browser via localStorage */
+const WB=(()=>{
+  const W=400,H=200;
+  const KEY='azal.wb.v1';
+  const off=document.createElement('canvas');off.width=W;off.height=H;
+  const g=off.getContext('2d');
+  function blank(){g.fillStyle='#f4f0e6';g.fillRect(0,0,W,H);g.strokeStyle='#c8b98a';g.lineWidth=6;g.strokeRect(3,3,W-6,H-6);
+    g.fillStyle='#7a6f52';g.font='bold 12px "Press Start 2P", monospace';g.textAlign='center';g.fillText('CLICK ME · DRAW SOMETHING',W/2,H/2)}
+  function load(){try{const s=localStorage.getItem(KEY);if(!s){blank();return}const img=new Image();img.onload=()=>{g.clearRect(0,0,W,H);g.drawImage(img,0,0);tex_.needsUpdate=true};img.src=s}catch(e){blank()}}
+  function save(){try{localStorage.setItem(KEY,off.toDataURL('image/png'))}catch(e){}}
+  const tex_=new THREE.CanvasTexture(off);tex_.magFilter=tex_.minFilter=THREE.LinearFilter;tex_.colorSpace=THREE.SRGBColorSpace;
+  load();
+  // mesh on the front wall, between the QR poster and the CCTV signs
+  const frameM=new THREE.MeshLambertMaterial({color:0x54331a});
+  const bezel=new THREE.Mesh(new THREE.BoxGeometry(1.36,0.7,0.05),frameM);
+  bezel.position.set(0.6,2.55,-3.56);scene.add(bezel);
+  const board=new THREE.Mesh(new THREE.PlaneGeometry(1.28,0.62),new THREE.MeshLambertMaterial({map:tex_}));
+  board.position.set(0.6,2.55,-3.537);board.name='wb';scene.add(board);
+  return {mesh:board, ctx:g, tex:tex_, W, H, save, blank};
+})();
+
 /* clutter */
 for(let i=0;i<14;i++){const p=new THREE.Mesh(new THREE.PlaneGeometry(0.22,0.28),tmat(i%3?T.paper:T.cash,{side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));p.rotation.set(-Math.PI/2,0,rnd(0,6.3));p.position.set(rnd(-3,3),0.045+i*0.002,rnd(-1.4,1.6));scene.add(p)}
 for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.14,8),mat([0xc84030,0x3060c0,0xd0d0d0,0x30a050][i]));c.position.set(rnd(-2.5,2.5),0.07,rnd(-1.2,1.4));c.rotation.z=i%2?Math.PI/2:0;if(i%2)c.position.y=0.045;scene.add(c)}
@@ -911,7 +932,14 @@ function pick(){
     if(h){h.material.map=h.userData.hot;h.material.needsUpdate=true;setShell(h,true);label.textContent='[ '+h.userData.section.title.toUpperCase()+' ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#8ef59a'}
     else{label.style.opacity=0;dot.style.transform='';dot.style.background='#fff'}
   }
+  // whiteboard hover (only when nothing else is hovered)
+  if(!h && WB && WB.mesh){
+    const wbHit=ray.intersectObject(WB.mesh,false)[0];
+    hoveredWB=wbHit?WB.mesh:null;
+    if(hoveredWB){label.textContent='[ DRAW ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#e2b23c'}
+  } else hoveredWB=null;
 }
+let hoveredWB=null;
 // lean in toward the TV: the camera dollies to ~1.1m in front of the screen and looks at it
 const tEye=EYE.clone(),camPos=EYE.clone();
 function aimAt(sc){const p=new THREE.Vector3();sc.getWorldPosition(p);
@@ -921,7 +949,8 @@ function aimAt(sc){const p=new THREE.Vector3();sc.getWorldPosition(p);
 viewTex=new THREE.CanvasTexture(view);viewTex.magFilter=viewTex.minFilter=THREE.NearestFilter;viewTex.colorSpace=THREE.SRGBColorSpace;
 canvas.addEventListener('click',()=>{
   if(active){return}
-  if(hovered){aimAt(hovered);openSection(hovered.userData.section)}
+  if(hovered){aimAt(hovered);openSection(hovered.userData.section);return}
+  if(hoveredWB){openWB()}
 });
 const _close=closeSection;closeSection=function(){_close();tFov=62;tEye.copy(EYE);if(lookMode==='mouse')look(innerWidth/2+mx*innerWidth/2,innerHeight/2+my*innerHeight/2)};
 $('bClose').onclick=()=>closeSection();
@@ -980,5 +1009,47 @@ function frame(){
 document.fonts.ready.then(()=>{screens.forEach(s=>{const x=s.userData.section;s.userData.cold=screenTex(x.tv,x.title.toUpperCase(),false);s.userData.hot=screenTex(x.tv,'> OPEN',true);s.material.map=s===hovered?s.userData.hot:s.userData.cold;s.material.needsUpdate=true})});
 frame();
 // debug hook (harmless in production; lets tests drive the room without a mouse)
-window.__room={get active(){return active},openSection,closeSection,screens,SECTIONS,setPage,channel,aimAt,get pages(){return pages},get page(){return page}};
+window.__room={get active(){return active},openSection,closeSection,screens,SECTIONS,setPage,channel,aimAt,get pages(){return pages},get page(){return page},openWB:()=>openWB()};
+
+/* whiteboard draw overlay */
+function openWB(){
+  if(document.getElementById('wbOverlay'))return;
+  const root=document.createElement('div');root.id='wbOverlay';
+  root.innerHTML=`
+    <div class="wbBack"></div>
+    <div class="wbSheet">
+      <div class="wbBar">
+        <div class="wbPal"></div>
+        <div class="wbGrow"></div>
+        <button class="btn wbUndo" title="Clear">CLEAR</button>
+        <button class="btn wbClose" title="Done">DONE</button>
+      </div>
+      <canvas class="wbBig" width="${WB.W}" height="${WB.H}"></canvas>
+      <div class="wbHint">draws are saved on your device — nobody else sees them</div>
+    </div>`;
+  document.body.appendChild(root);
+  const COLORS=['#0e0e14','#a3231f','#1f6a2b','#1f2a5a','#e2b23c','#f4f0e6'];
+  let color=COLORS[0], size=3;
+  const pal=root.querySelector('.wbPal');
+  COLORS.forEach(c=>{const b=document.createElement('button');b.className='wbSw';b.style.background=c;b.onclick=()=>{color=c;pal.querySelectorAll('.wbSw').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')};pal.appendChild(b);if(c===color)b.classList.add('sel')});
+  const bigCv=root.querySelector('.wbBig');
+  // copy current off-screen board onto big canvas
+  const bg=bigCv.getContext('2d');bg.drawImage(WB.ctx.canvas,0,0);
+  let drawing=false,lx=0,ly=0;
+  const pos=(e)=>{const r=bigCv.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*WB.W,y:(e.clientY-r.top)/r.height*WB.H}};
+  const stroke=(e)=>{const p=pos(e);
+    bg.strokeStyle=color;bg.lineWidth=size;bg.lineCap='round';bg.lineJoin='round';
+    bg.beginPath();bg.moveTo(lx,ly);bg.lineTo(p.x,p.y);bg.stroke();lx=p.x;ly=p.y;
+    // mirror to off-screen
+    WB.ctx.drawImage(bigCv,0,0);WB.tex.needsUpdate=true;
+  };
+  bigCv.addEventListener('pointerdown',e=>{drawing=true;const p=pos(e);lx=p.x;ly=p.y;bigCv.setPointerCapture(e.pointerId);stroke(e);e.preventDefault()});
+  bigCv.addEventListener('pointermove',e=>{if(drawing)stroke(e)});
+  bigCv.addEventListener('pointerup',()=>{drawing=false;WB.save()});
+  bigCv.addEventListener('pointercancel',()=>{drawing=false;WB.save()});
+  root.querySelector('.wbUndo').onclick=()=>{WB.blank();bg.drawImage(WB.ctx.canvas,0,0);WB.tex.needsUpdate=true;WB.save()};
+  root.querySelector('.wbClose').onclick=()=>{WB.save();root.remove()};
+  root.querySelector('.wbBack').onclick=()=>{WB.save();root.remove()};
+  addEventListener('keydown',function esc(ev){if(ev.key==='Escape'){WB.save();root.remove();removeEventListener('keydown',esc)}});
+}
 window.addEventListener('error',e=>{window.__lastErr=(e.message||'')+' @'+(e.filename||'').split('/').pop()+':'+e.lineno});

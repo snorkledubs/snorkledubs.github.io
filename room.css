@@ -142,3 +142,16 @@ html,body{margin:0;height:100%;background:#07090f;overflow:hidden;font-family:'V
 #ach .a.on{transform:translateX(0);opacity:1}
 #ach .a b{display:block;color:#fff;margin-bottom:4px;font-size:8px;letter-spacing:2px}
 @media (max-width:700px){#ach{right:8px;left:8px;top:110px}#ach .a{transform:translateY(-40px);max-width:none}#ach .a.on{transform:none}}
+
+/* whiteboard drawing overlay */
+#wbOverlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;cursor:auto}
+#wbOverlay .wbBack{position:absolute;inset:0;background:rgba(4,4,6,.85);backdrop-filter:blur(4px)}
+#wbOverlay .wbSheet{position:relative;background:#0e0e14;border:4px solid #f4f0e6;box-shadow:0 0 0 4px #0e0e14,0 20px 40px rgba(0,0,0,.7);padding:14px;max-width:min(96vw,880px);width:96vw;display:flex;flex-direction:column;gap:10px}
+#wbOverlay .wbBar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#wbOverlay .wbPal{display:flex;gap:6px}
+#wbOverlay .wbSw{width:30px;height:30px;border:2px solid #444;cursor:pointer;padding:0}
+#wbOverlay .wbSw.sel{border-color:#fff;box-shadow:0 0 0 2px #000,0 0 0 4px #8ef59a}
+#wbOverlay .wbGrow{flex:1}
+#wbOverlay .btn{cursor:pointer}
+#wbOverlay .wbBig{display:block;background:#f4f0e6;width:100%;height:auto;aspect-ratio:2/1;image-rendering:pixelated;touch-action:none;border:2px solid #333;cursor:crosshair}
+#wbOverlay .wbHint{font-family:'Press Start 2P',monospace;font-size:9px;color:#a09984;letter-spacing:1px;text-align:center;margin-top:4px}
