@@ -248,7 +248,64 @@ function paginate(P){
 }
 const imgCache={};function img(src){if(!src)return null;if(!imgCache[src]){const i=new Image();i.onload=()=>{if(active)drawView()};i.src=src;imgCache[src]=i}return imgCache[src]}
 let pages=[],page=0,watching=null,glitchT=null;
+let bsodMode=false;
+function drawBSOD(){
+  const g=vg;g.fillStyle='#1a2fa3';g.fillRect(0,0,VW,VH);
+  g.textBaseline='top';g.textAlign='left';
+  g.fillStyle='#fff';g.font='bold 22px "Press Start 2P", monospace';
+  g.fillText(':(', 40, 40);
+  g.font='16px "Press Start 2P", monospace';
+  const lines=[
+    'YOUR PC RAN INTO A PROBLEM',
+    'AND NEEDS TO RESTART. AS SOON',
+    'AS AZAL FINDS THE PASSWORD',
+    "FOR HIS OWN LOGIN, LOL.",
+    '',
+    "STOP CODE: 0xADDERALL_NOT_FOUND",
+    "WHAT FAILED: system32/pills.sys",
+    '',
+    'FOR MORE INFO, ASK THE GUY IN',
+    'THE CHAIR. HES BUSY THOUGH.',
+  ];
+  g.font='14px "Press Start 2P", monospace';
+  lines.forEach((l,i)=>g.fillText(l,40,110+i*22));
+  // fake progress
+  const pct=Math.min(100,Math.floor(((Date.now()/60)%400)));
+  g.fillStyle='#c8d8ff';g.font='14px "Press Start 2P", monospace';
+  g.fillText(pct+'% COMPLETE', 40, VH-90);
+  // QR-alt block
+  g.fillStyle='#fff';g.fillRect(VW-140,VH-140,88,88);
+  g.fillStyle='#1a2fa3';
+  for(let i=0;i<8;i++)for(let j=0;j<8;j++) if((i*3+j*5+((Date.now()/500)|0))%3===0) g.fillRect(VW-136+j*10,VH-136+i*10,10,10);
+  // scanline
+  g.fillStyle='rgba(0,0,0,.22)';for(let yy=0;yy<VH;yy+=3)g.fillRect(0,yy,VW,1);
+  if(viewTex)viewTex.needsUpdate=true;
+}
+setInterval(()=>{if(bsodMode)drawBSOD()}, 260);
+
+/* radio dial: turns all TVs to static when detuned */
+let detune=0; // 0..1
+let staticTex=null, staticAnim=0;
+function ensureStatic(){
+  if(staticTex)return;
+  const c=document.createElement('canvas');c.width=128;c.height=96;
+  const g=c.getContext('2d');
+  function paint(){
+    const id=g.createImageData(c.width,c.height),d=id.data;
+    for(let i=0;i<d.length;i+=4){const v=(Math.random()*255)|0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
+    g.putImageData(id,0,0);
+    if(staticTex)staticTex.needsUpdate=true;
+  }
+  paint();staticTex=new THREE.CanvasTexture(c);staticTex.magFilter=staticTex.minFilter=THREE.NearestFilter;staticTex.colorSpace=THREE.SRGBColorSpace;
+  staticAnim=setInterval(paint,120);
+}
+function applyDetune(){
+  if(detune>0.55){ensureStatic();screens.forEach(s=>{if(s.material.map!==staticTex&&s!==watching){s.userData.origCold=s.userData.origCold||s.userData.cold;s.material.map=staticTex;s.material.needsUpdate=true}})}
+  else{screens.forEach(s=>{if(s.userData.origCold&&s.material.map===staticTex&&s!==watching){s.material.map=s.userData.origCold;s.material.needsUpdate=true}})}
+}
+
 function drawView(){
+  if(bsodMode){drawBSOD();return}
   const p=pages[page];if(!p)return;const g=vg;
   g.fillStyle='#06170b';g.fillRect(0,0,VW,VH);
   g.textBaseline='top';g.textAlign='left';
@@ -312,12 +369,12 @@ function openSection(s,viaRemote){
   ACH.markViewed(s.id);
 }
 function channel(dir){
-  if(!active)return;const i=SECTIONS.indexOf(active);const s=SECTIONS[(i+dir+SECTIONS.length)%SECTIONS.length];
+  if(!active)return;bsodMode=false;const i=SECTIONS.indexOf(active);const s=SECTIONS[(i+dir+SECTIONS.length)%SECTIONS.length];
   const sc=screens.find(x=>x.userData.section===s);aimAt(sc,true);openSection(s,true);
 }
 function pressOK(){const p=pages[page];if(dlg.classList.contains('on')){next();return}if(p&&p.link)window.open(p.link,'_blank','noopener')}
 function closeSection(){
-  active=null;document.body.style.cursor='none';$('dot').style.opacity=.9;if(typeof showMode==='function'){showMode();povCursor()}
+  active=null;bsodMode=false;document.body.style.cursor='none';$('dot').style.opacity=.9;if(typeof showMode==='function'){showMode();povCursor()}
   panel.classList.remove('on');dlg.classList.remove('on');queue=[];clearTimeout(timer);typing=false;stopMouth();currentMood=null;setFaceMood(null);
   clearTimeout(glitchT);remote.hidden=true;
   if(watching){watching.material.map=watching.userData.cold;watching.material.needsUpdate=true;watching=null}
@@ -327,6 +384,13 @@ remote.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)ret
   if(r==='power')closeSection();else if(r==='next')setPage(page+1);else if(r==='prev')setPage(page-1);
   else if(r==='chup')channel(1);else if(r==='chdn')channel(-1);else if(r==='ok')pressOK();
   else if(r==='txt')panel.classList.toggle('on')});
+/* VHS scrubber: hold REW to rewind through pages with per-tick glitch */
+let rewT=null;
+function startRew(){clearInterval(rewT);const tick=()=>{if(!active||bsodMode)return stopRew();setPage(page-1)};tick();rewT=setInterval(tick,420)}
+function stopRew(){clearInterval(rewT);rewT=null}
+remote.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&b.dataset.r==='rew'){e.preventDefault();startRew()}});
+addEventListener('pointerup',stopRew);
+addEventListener('pointercancel',stopRew);
 addEventListener('keydown',e=>{
   if(e.key==='Escape')closeSection();
   if(!active){if(e.key==='Enter'||e.key===' ')if(dlg.classList.contains('on'))next();return}
@@ -334,6 +398,7 @@ addEventListener('keydown',e=>{
   else if(e.key==='ArrowUp'){e.preventDefault();channel(-1)}else if(e.key==='ArrowDown'){e.preventDefault();channel(1)}
   else if(e.key==='Enter'||e.key===' '){e.preventDefault();pressOK()}
   else if(e.key==='t'||e.key==='T')panel.classList.toggle('on');
+  else if(e.key==='0'){e.preventDefault();bsodMode=!bsodMode;drawView();if(sound)zap()}
 });
 
 /* ---------- three.js ---------- */
@@ -517,6 +582,26 @@ box(0.08,3.0,0.08,railM,3.3,1.5,-3.6);
     qr.position.set(-2.05,1.44,-3.536);scene.add(qr);
   });
 }
+
+/* radio dial: rotate to detune all TVs to static */
+const KNOB=(()=>{
+  const bezel=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,0.06,10),new THREE.MeshLambertMaterial({color:0x1a1a20}));
+  bezel.rotation.x=Math.PI/2;bezel.position.set(-3.4,1.05,-3.53);scene.add(bezel);
+  const knob=new THREE.Mesh(new THREE.CylinderGeometry(0.10,0.10,0.04,10),new THREE.MeshLambertMaterial({color:0x8a3a1a,emissive:0x2a0e04}));
+  knob.rotation.x=Math.PI/2;knob.position.set(-3.4,1.05,-3.505);scene.add(knob);
+  const tick=new THREE.Mesh(new THREE.BoxGeometry(0.015,0.09,0.02),new THREE.MeshLambertMaterial({color:0xf4f0e6,emissive:0x606060}));
+  tick.position.set(0,0.05,0);knob.add(tick);
+  // small "TUNE" label above
+  const CW=128,CH=32,cvs=document.createElement('canvas');cvs.width=CW;cvs.height=CH;
+  const g=cvs.getContext('2d');g.fillStyle='#1a1a20';g.fillRect(0,0,CW,CH);
+  g.fillStyle='#f4f0e6';g.font='bold 13px "Press Start 2P", monospace';g.textAlign='center';g.textBaseline='middle';g.fillText('TUNE',CW/2,CH/2);
+  const tex_=new THREE.CanvasTexture(cvs);tex_.magFilter=tex_.minFilter=THREE.NearestFilter;
+  const label=new THREE.Mesh(new THREE.PlaneGeometry(0.28,0.07),new THREE.MeshLambertMaterial({map:tex_}));
+  label.position.set(-3.4,1.24,-3.51);scene.add(label);
+  knob.name='knob';knob.userData.detune=0;
+  return {knob};
+})();
+function setDetune(v){detune=Math.max(0,Math.min(1,v));KNOB.knob.rotation.z=detune*Math.PI*1.5;applyDetune()}
 
 /* interactive whiteboard: draw on the wall, saved per browser via localStorage */
 const WB=(()=>{
@@ -932,14 +1017,20 @@ function pick(){
     if(h){h.material.map=h.userData.hot;h.material.needsUpdate=true;setShell(h,true);label.textContent='[ '+h.userData.section.title.toUpperCase()+' ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#8ef59a'}
     else{label.style.opacity=0;dot.style.transform='';dot.style.background='#fff'}
   }
-  // whiteboard hover (only when nothing else is hovered)
+  // whiteboard + knob hover (only when no TV is hovered)
   if(!h && WB && WB.mesh){
     const wbHit=ray.intersectObject(WB.mesh,false)[0];
     hoveredWB=wbHit?WB.mesh:null;
+    hoveredKnob=null;
+    if(!hoveredWB && KNOB && KNOB.knob){
+      const kHit=ray.intersectObject(KNOB.knob,true)[0];
+      hoveredKnob=kHit?KNOB.knob:null;
+    }
     if(hoveredWB){label.textContent='[ DRAW ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#e2b23c'}
-  } else hoveredWB=null;
+    else if(hoveredKnob){label.textContent='[ TUNE ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#e2b23c'}
+  } else {hoveredWB=null;hoveredKnob=null}
 }
-let hoveredWB=null;
+let hoveredWB=null, hoveredKnob=null;
 // lean in toward the TV: the camera dollies to ~1.1m in front of the screen and looks at it
 const tEye=EYE.clone(),camPos=EYE.clone();
 function aimAt(sc){const p=new THREE.Vector3();sc.getWorldPosition(p);
@@ -950,7 +1041,8 @@ viewTex=new THREE.CanvasTexture(view);viewTex.magFilter=viewTex.minFilter=THREE.
 canvas.addEventListener('click',()=>{
   if(active){return}
   if(hovered){aimAt(hovered);openSection(hovered.userData.section);return}
-  if(hoveredWB){openWB()}
+  if(hoveredWB){openWB();return}
+  if(hoveredKnob){setDetune(detune>0.5?0:1);if(sound){try{const A=AC||new (window.AudioContext||window.webkitAudioContext)();AC=A;const t=A.currentTime,o=A.createOscillator(),ga=A.createGain();o.type='sawtooth';o.frequency.setValueAtTime(220,t);o.frequency.linearRampToValueAtTime(90,t+.12);ga.gain.setValueAtTime(.04,t);ga.gain.exponentialRampToValueAtTime(.001,t+.14);o.connect(ga).connect(A.destination);o.start(t);o.stop(t+.15)}catch(e){}}}
 });
 const _close=closeSection;closeSection=function(){_close();tFov=62;tEye.copy(EYE);if(lookMode==='mouse')look(innerWidth/2+mx*innerWidth/2,innerHeight/2+my*innerHeight/2)};
 $('bClose').onclick=()=>closeSection();
@@ -1002,6 +1094,7 @@ function frame(){
   if(hovered){hovered.getWorldPosition(_hoverPos);hoverLight.position.copy(_hoverPos);hoverLight.position.z+=0.6;hoverLight.intensity=6+Math.sin(t*6)*2}else hoverLight.intensity=0;
   bulb.material.color.setHSL(0.1,0.7,lamp.intensity>10?0.85:0.5);
   if(!active)pick();
+  if(CATS)CATS.tick();
   renderer.render(scene,camera);
   renderHead(t);
   requestAnimationFrame(frame);
@@ -1010,6 +1103,56 @@ document.fonts.ready.then(()=>{screens.forEach(s=>{const x=s.userData.section;s.
 frame();
 // debug hook (harmless in production; lets tests drive the room without a mouse)
 window.__room={get active(){return active},openSection,closeSection,screens,SECTIONS,setPage,channel,aimAt,get pages(){return pages},get page(){return page},openWB:()=>openWB()};
+
+/* the cats */
+const CATS=(()=>{
+  const nyf=(pitch)=>{if(!sound)return;try{const A=AC||new (window.AudioContext||window.webkitAudioContext)();AC=A;const t=A.currentTime,o=A.createOscillator(),ga=A.createGain();o.type='triangle';o.frequency.setValueAtTime(pitch,t);o.frequency.exponentialRampToValueAtTime(pitch*1.3,t+.05);o.frequency.exponentialRampToValueAtTime(pitch*0.8,t+.22);ga.gain.setValueAtTime(.03,t);ga.gain.exponentialRampToValueAtTime(.001,t+.28);o.connect(ga).connect(A.destination);o.start(t);o.stop(t+.3)}catch(e){}};
+  function makeCat(color,eyeColor,scale){
+    const g=new THREE.Group();
+    const M=new THREE.MeshLambertMaterial({color});
+    const eyeM=new THREE.MeshLambertMaterial({color:eyeColor,emissive:eyeColor,emissiveIntensity:.5});
+    const body=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.20,0.55),M);body.position.y=0.13;g.add(body);
+    const head=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.22,0.20),M);head.position.set(0,0.26,-0.30);g.add(head);
+    [-1,1].forEach(s=>{const e=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.10,4),M);e.position.set(s*0.08,0.42,-0.30);g.add(e)});
+    [-1,1].forEach(s=>{const y=new THREE.Mesh(new THREE.SphereGeometry(0.026,5,4),eyeM);y.position.set(s*0.06,0.28,-0.40);g.add(y)});
+    const tail=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.05,0.32),M);tail.position.set(0,0.18,0.36);g.add(tail);
+    g.scale.setScalar(scale);
+    return {group:g,body,head,tail};
+  }
+  const parts={};
+  const P=(k,c,ec,s,x,z)=>{const c1=makeCat(c,ec,s);c1.group.position.set(x,0.02,z);scene.add(c1.group);parts[k]=c1;parts[k].target=new THREE.Vector3(x,0.02,z);parts[k].tState='idle';parts[k].tTimer=0;return c1};
+  P('sammy', 0x8a8a90, 0xe2b23c, 1.00,  1.8, 0.6);
+  P('sorah', 0x5a3a24, 0xe2b23c, 1.28, -1.6, 0.9);
+  P('zelda', 0x9a9aa4, 0xf6e04a, 0.98,  0.3, 1.3);
+  function pickTarget(){return new THREE.Vector3((Math.random()*2-1)*2.0,0.02,0.2+Math.random()*1.6)}
+  let t0=performance.now()/1000;
+  function tick(){
+    const now=performance.now()/1000,dt=Math.min(0.1,now-t0);t0=now;
+    Object.entries(parts).forEach(([name,cat])=>{
+      cat.tTimer-=dt;
+      if(cat.tTimer<=0){
+        cat.tTimer=3+Math.random()*5;
+        cat.tState=Math.random()<0.55?'walk':'special';
+        if(cat.tState==='walk')cat.target=pickTarget();
+      }
+      if(cat.tState==='walk'){
+        const to=cat.target,pos=cat.group.position;
+        const dx=to.x-pos.x,dz=to.z-pos.z,d=Math.hypot(dx,dz);
+        if(d>0.05){const sp=0.9*dt;pos.x+=(dx/d)*sp;pos.z+=(dz/d)*sp;cat.group.rotation.y=Math.atan2(dx,dz)+Math.PI;cat.tail.rotation.z=Math.sin(now*8+name.length)*0.4}
+      } else if(cat.tState==='special'){
+        cat.tail.rotation.z=Math.sin(now*4)*0.25;
+        if(name==='sammy'){cat.head.rotation.z=Math.sin(now*8)*0.35;cat.head.rotation.x=Math.sin(now*7)*0.15;if(Math.random()<0.02)nyf(720)}
+        else if(name==='sorah'){cat.group.rotation.y+=dt*3.2;cat.head.rotation.x=0.2}
+        else if(name==='zelda'){
+          const dx=(0-cat.group.position.x),dz=(1.7-cat.group.position.z);const d=Math.hypot(dx,dz);
+          if(d>0.4){const sp=0.7*dt;cat.group.position.x+=(dx/d)*sp;cat.group.position.z+=(dz/d)*sp;cat.group.rotation.y=Math.atan2(dx,dz)+Math.PI}
+          else{if(Math.random()<0.01){nyf(880);say([{mood:'chill',text:'zelda dropped something at your feet'},{mood:'lazy',text:'oh — she brought you an addy. cute.'}])}}
+        }
+      }
+    });
+  }
+  return {parts, tick};
+})();
 
 /* whiteboard draw overlay */
 function openWB(){
