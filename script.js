@@ -43,7 +43,8 @@
   // ---- About ----
   $("about-text").innerHTML = ABOUT; // trusted: your own content from data.js
 
-  // ---- Projects ----
+  // ---- Projects (hidden until SITE.showProjects) ----
+  if (!SITE.showProjects) { $("projects").hidden = true; $("nav-projects").hidden = true; }
   const grid = $("projects-grid");
   const filters = $("filters");
   const allTags = [...new Set(PROJECTS.flatMap((p) => p.tags || []))].sort();
@@ -92,6 +93,27 @@
     });
     setFilter("*");
   }
+
+  // ---- Timeline ----
+  const tl = $("timeline-list");
+  (typeof TIMELINE !== "undefined" ? TIMELINE : []).forEach((t) => {
+    const li = document.createElement("li");
+    li.className = "reveal";
+    li.innerHTML = `<span class="tl-when">${esc(t.when)}</span><div><h3>${esc(t.title)}${t.where ? ` <span class="tl-where">· ${esc(t.where)}</span>` : ""}</h3><p>${esc(t.desc || "")}</p></div>`;
+    tl.appendChild(li);
+  });
+  if (!tl.children.length) $("timeline").hidden = true;
+
+  // ---- Writeups ----
+  const posts = $("posts");
+  (typeof BLOG !== "undefined" ? BLOG : []).forEach((b) => {
+    const a = document.createElement(b.url ? "a" : "div");
+    if (b.url) a.href = b.url;
+    a.className = "post reveal";
+    a.innerHTML = `<span class="post-date">${esc(b.date)}</span><h3>${esc(b.title)}</h3><p>${esc(b.summary || "")}</p>`;
+    posts.appendChild(a);
+  });
+  if (!posts.children.length) $("blog").hidden = true;
 
   // ---- Skills ----
   const skills = $("skills");

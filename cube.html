@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cube Portfolio</title>
+  <link rel="stylesheet" href="cube.css">
+</head>
+<body>
+  <div class="hud">
+    <div class="hud-left">
+      <span class="brand" id="brand"></span>
+      <span class="face-label" id="face-label"></span>
+    </div>
+    <div class="hud-right">
+      <span class="hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows to walk · walk off an edge to flip</span>
+      <a href="index.html" class="hud-link">classic view</a>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="scene">
+      <div class="hop" id="hop">
+        <div class="cube" id="cube"></div>
+      </div>
+    </div>
+
+    <div class="arena" id="arena">
+      <div class="player" id="player">
+        <div class="eyes"><i></i><i></i></div>
+      </div>
+    </div>
+
+    <button class="nav nav-up"    data-dir="up"    aria-label="Flip up">&#9650;</button>
+    <button class="nav nav-down"  data-dir="down"  aria-label="Flip down">&#9660;</button>
+    <button class="nav nav-left"  data-dir="left"  aria-label="Flip left">&#9664;</button>
+    <button class="nav nav-right" data-dir="right" aria-label="Flip right">&#9654;</button>
+  </div>
+
+  <div class="dpad" id="dpad">
+    <button data-key="ArrowUp">&#9650;</button>
+    <button data-key="ArrowLeft">&#9664;</button>
+    <button data-key="ArrowDown">&#9660;</button>
+    <button data-key="ArrowRight">&#9654;</button>
+  </div>
+
+  <div class="minimap" id="minimap" title="Faces visited"></div>
+
+  <script src="data.js"></script>
+  <script src="cube.js"></script>
+</body>
+</html>
