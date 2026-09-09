@@ -467,35 +467,31 @@ window.buildHead=function(){
   }else{
     // ==== semi-troll face: squinty angry brows + wide curled grin, all animated ====
     const brows=window.__brows=[];
-    const eyeY=0.22;
-    [-0.24,0.24].forEach(ox=>{
+    const eyeY=0.20;
+    [-0.20,0.20].forEach(ox=>{
       const inward=ox<0?1:-1;
-      // three-stub brow angled down toward the nose
       for(let k=0;k<3;k++){
-        const bx=ox+(k-1)*0.075;
-        const by=eyeY+0.11-(k*inward)*0.025;
-        const b=quad(0.078,0.032,bx,by,Z,inkM,'brow');
+        const bx=ox+(k-1)*0.062;
+        const by=eyeY+0.09-(k*inward)*0.022;
+        const b=quad(0.066,0.028,bx,by,Z,inkM,'brow');
         brows.push({mesh:b,bx,by,side:inward,k});
       }
-      // squinty slit
-      const slit=quad(0.22,0.035,ox,eyeY,Z+0.001,inkM,'slit');
+      const slit=quad(0.19,0.03,ox,eyeY,Z+0.001,inkM,'slit');
       brows.push({mesh:slit,bx:ox,by:eyeY,side:inward,k:-1});
-      // pupil gleam
-      quad(0.04,0.03,ox+inward*-0.04,eyeY,Z+0.004,starM,'gleam');
+      quad(0.035,0.025,ox+inward*-0.035,eyeY,Z+0.004,starM,'gleam');
     });
-    // grin as a chain of segments; right-side curl for the troll smirk
     const inkC2=starC.getHSL({}).l<0.4?0xf4f2ea:0x15131a;
     const toothM=hmat({color:inkC2});
     const segs=window.__grinSegs=[], teeth=window.__grinTeeth=[], divs=window.__grinDivs=[];
-    const N=18, GW=1.05, GY=-0.16, sw=GW/N;
+    const N=16, GW=0.88, GY=-0.14, sw=GW/N;
     for(let i=0;i<N;i++){
       const t=i/(N-1), x=-GW/2+sw/2+t*GW;
-      segs.push({mesh:quad(sw*1.2,0.14,x,GY,Z+0.0005,inkM,'grin'),t,x});
-      teeth.push({mesh:quad(sw*0.95,0.07,x,GY,Z+0.003,toothM,'tooth'),t,x});
+      segs.push({mesh:quad(sw*1.2,0.115,x,GY,Z+0.0005,inkM,'grin'),t,x});
+      teeth.push({mesh:quad(sw*0.95,0.055,x,GY,Z+0.003,toothM,'tooth'),t,x});
     }
     for(let i=1;i<8;i++){
       const t=i/8, x=-GW/2+t*GW;
-      divs.push({mesh:quad(0.018,0.07,x,GY,Z+0.005,inkM,'div'),t,x});
+      divs.push({mesh:quad(0.016,0.055,x,GY,Z+0.005,inkM,'div'),t,x});
     }
     window.__grinBase={GY,GW};
   }
@@ -522,8 +518,11 @@ window.buildHead=function(){
     [-1,1].forEach(sg=>{const cup=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.16,8),pm);cup.rotation.z=Math.PI/2;cup.position.set(sg*1.02,0,0);head.add(cup);const pad=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.17,0.06,8),pd);pad.rotation.z=Math.PI/2;pad.position.set(sg*0.92,0,0);head.add(pad)})}
   if(ex.includes('cap')){const capC=hmat({color:0xc46a7a});const cr=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.26,0.5),capC);cr.position.set(0,1.32,0);head.add(cr);const bill=new THREE.Mesh(new THREE.BoxGeometry(0.85,0.06,0.45),capC);bill.position.set(0,1.2,0.42);bill.rotation.x=0.18;head.add(bill)}
   // neck + body
-  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.2,1.0,6),starM);neck.position.y=-1.05;fig.add(neck);
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.5,0.55),shirt);torso.position.y=-2.0;torso.name='torso';fig.add(torso);
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.24,1.0,6),starM);neck.position.y=-1.05;fig.add(neck);
+  // torso: 6-side low-poly barrel, flattened front-to-back so it reads torso-shaped
+  const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.50,1.5,6,1),shirt);torso.position.y=-2.0;torso.rotation.y=Math.PI/6;torso.scale.set(1.0,1,0.60);torso.name='torso';fig.add(torso);
+  // shoulder caps
+  [-1,1].forEach(s=>{const sh=new THREE.Mesh(new THREE.SphereGeometry(0.32,6,4),shirt);sh.position.set(s*0.55,-1.42,0);sh.scale.set(1,0.9,0.85);fig.add(sh)});
   // cuban chain — always on
   {const chainM=hmat({color:0xf0f0f6,emissive:0x303038}),chainD=hmat({color:0xb8b8c4});
   for(let i=0;i<22;i++){const a=i/22*Math.PI*2;const front=Math.max(0,Math.sin(a));const y=-1.2-front*0.42;const r=0.26+front*0.2;
@@ -531,17 +530,29 @@ window.buildHead=function(){
   if(AV.top!=='tee'){const inner=new THREE.Mesh(new THREE.BoxGeometry(0.34,1.4,0.06),AV.top==='hoodie'?shirtL:hmat({color:0xd8d4cc}));inner.position.set(0,-1.98,0.28);fig.add(inner)}
   else{const print=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.5,0.03),hmat({map:tex(16,16,(g)=>{g.fillStyle=AV.shirt;g.fillRect(0,0,16,16);g.fillStyle='#c8c2b0';g.fillRect(3,3,10,1);g.fillRect(3,6,10,1);g.fillRect(3,9,10,1);g.fillRect(5,12,6,1);g.fillStyle='#8a4a6a';g.fillRect(6,4,4,2)})}));print.position.set(0,-1.95,0.28);fig.add(print);
     const collar=new THREE.Mesh(new THREE.TorusGeometry(0.28,0.05,4,10),shirtL);collar.rotation.x=Math.PI/2;collar.position.y=-1.26;fig.add(collar)}
-  if(AV.top==='hoodie'){const hood=new THREE.Mesh(new THREE.BoxGeometry(1.15,0.5,0.45),shirt);hood.position.set(0,-1.2,-0.45);hood.rotation.x=0.4;fig.add(hood);
-    const str=hmat({color:0xd8d4cc});[-1,1].forEach(s=>{const c=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.55,0.04),str);c.position.set(s*0.22,-1.6,0.31);fig.add(c)})}
-  else if(AV.top==='sweater'){[-1,1].forEach(s=>{const c=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.3,0.08),shirtL);c.position.set(s*0.28,-1.28,0.26);c.rotation.z=s*0.6;c.rotation.x=-0.25;fig.add(c)})}
+  if(AV.top==='hoodie'){
+    const hood=new THREE.Mesh(new THREE.SphereGeometry(0.55,6,4,0,Math.PI*2,0,Math.PI*0.65),shirt);hood.position.set(0,-1.10,-0.32);hood.rotation.x=0.4;hood.scale.set(1.05,1,0.85);fig.add(hood);
+    const str=hmat({color:0xd8d4cc});[-1,1].forEach(s=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.028,0.55,4),str);c.position.set(s*0.22,-1.6,0.31);fig.add(c)});
+  } else if(AV.top==='sweater'){
+    [-1,1].forEach(s=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(0.20,0.14,0.32,6),shirtL);c.position.set(s*0.28,-1.28,0.26);c.rotation.z=s*0.6;c.rotation.x=-0.25;fig.add(c)});
+  }
+  const pantsM=hmat({color:0x1a1a20});
   [-1,1].forEach(s=>{const tee=AV.top==='tee';
-    const sleeve=new THREE.Mesh(new THREE.BoxGeometry(0.32,tee?0.55:1.45,0.34),shirt);sleeve.position.set(s*0.72,tee?-1.55:-2.05,0);sleeve.rotation.z=s*0.06;fig.add(sleeve);
-    if(tee){const arm=new THREE.Mesh(new THREE.BoxGeometry(0.26,0.95,0.28),starM);arm.position.set(s*0.74,-2.3,0);fig.add(arm)}
-    const hand=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.28,0.24),starM);hand.position.set(s*0.78,-2.9,0);fig.add(hand);
-    const leg=new THREE.Mesh(new THREE.BoxGeometry(0.42,1.7,0.46),hmat({color:0x1a1a20}));leg.position.set(s*0.28,-3.6,0);fig.add(leg);
-    const shoe=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.26,0.62),dark);shoe.position.set(s*0.28,-4.52,0.1);fig.add(shoe);
-    const sole=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.08,0.64),hmat({color:0xd8d4cc}));sole.position.set(s*0.28,-4.63,0.1);fig.add(sole)});
-  const belt=new THREE.Mesh(new THREE.BoxGeometry(1.12,0.12,0.57),dark);belt.position.y=-2.75;fig.add(belt);
+    // sleeve: tapered cylinder
+    const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.16,tee?0.55:1.45,6),shirt);sleeve.position.set(s*0.72,tee?-1.55:-2.05,0);sleeve.rotation.z=s*0.06;fig.add(sleeve);
+    if(tee){const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.12,0.95,6),starM);arm.position.set(s*0.74,-2.3,0);fig.add(arm)}
+    // hand: low-poly sphere
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(0.16,6,4),starM);hand.position.set(s*0.78,-2.88,0);hand.scale.set(0.95,1,0.9);fig.add(hand);
+    // leg: tapered cylinder
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.19,1.7,6),pantsM);leg.position.set(s*0.28,-3.6,0);fig.add(leg);
+    // shoe: horizontal cylinder squashed flat, toe forward
+    const shoeGeo=new THREE.CylinderGeometry(0.20,0.20,0.66,6);shoeGeo.rotateZ(Math.PI/2);
+    const shoe=new THREE.Mesh(shoeGeo,dark);shoe.position.set(s*0.28,-4.50,0.14);shoe.rotation.y=Math.PI/2;shoe.scale.set(1,0.55,1);fig.add(shoe);
+    const soleGeo=new THREE.CylinderGeometry(0.21,0.21,0.70,6);soleGeo.rotateZ(Math.PI/2);
+    const sole=new THREE.Mesh(soleGeo,hmat({color:0xd8d4cc}));sole.position.set(s*0.28,-4.62,0.14);sole.rotation.y=Math.PI/2;sole.scale.set(1,0.42,1);fig.add(sole);
+  });
+  // belt: flattened low-poly ring
+  const belt=new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.52,0.13,6),dark);belt.position.y=-2.75;belt.rotation.y=Math.PI/6;belt.scale.set(1,1,0.62);fig.add(belt);
   hs.add(fig);
 };
 buildHead();
