@@ -285,12 +285,28 @@ function showScreen(sc){
   watching=sc;sc.material.map=viewTex;sc.material.needsUpdate=true;setShell(sc,false);
 }
 function setPage(i){if(!pages.length)return;const n=((i%pages.length)+pages.length)%pages.length;if(n===page&&pages.length>1)return;glitchTo(()=>{page=n;drawView()})}
+// CRT power-on: black → collapsing hot band → full flash → content
+let powerT=null;
+function powerOn(then){
+  clearTimeout(powerT);const g=vg;let n=0;
+  const step=()=>{
+    if(n<3){g.fillStyle='#000';g.fillRect(0,0,VW,VH)}
+    else if(n<8){g.fillStyle='#000';g.fillRect(0,0,VW,VH);
+      const h=Math.max(2,26-(n-3)*5);g.fillStyle='#e8ffe8';g.fillRect(0,VH/2-h/2,VW,h)}
+    else if(n<11){const a=1-(n-8)/3;g.fillStyle='rgba(190,255,210,'+a.toFixed(2)+')';g.fillRect(0,0,VW,VH)}
+    if(viewTex)viewTex.needsUpdate=true;
+    if(++n<11)powerT=setTimeout(step,30);
+    else{then();if(sound){try{const A=AC||new (window.AudioContext||window.webkitAudioContext)();AC=A;const t=A.currentTime,o=A.createOscillator(),ga=A.createGain();o.type='square';o.frequency.setValueAtTime(1600,t);o.frequency.exponentialRampToValueAtTime(140,t+.06);ga.gain.setValueAtTime(.05,t);ga.gain.exponentialRampToValueAtTime(.001,t+.08);o.connect(ga).connect(A.destination);o.start(t);o.stop(t+.09)}catch(e){}}}
+  };
+  step();
+}
 function openSection(s,viaRemote){
   active=s;document.body.style.cursor='auto';$('dot').style.opacity=0;if(document.pointerLockElement)document.exitPointerLock();
   pBody.innerHTML=`<h2>${s.title}</h2>${s.html}`;$('hint').style.opacity=0;
   const sc=screens.find(x=>x.userData.section===s);
   pages=pagesFor(s);page=0;
-  if(viaRemote){glitchTo(()=>{showScreen(sc);drawView()})}else{showScreen(sc);drawView()}
+  if(viaRemote){glitchTo(()=>{showScreen(sc);drawView()})}
+  else{showScreen(sc);powerOn(()=>drawView())}
   remote.hidden=false;
   say(s.say.map(l=>l.replace(/\{name\}/g,AV.name)));
   ACH.markViewed(s.id);
@@ -448,6 +464,59 @@ const cabM=mat(0x1a1a1e);
 /* signs on a pole */
 box(0.08,3.0,0.08,railM,3.3,1.5,-3.6);
 [[signTex('NO\nSIGNAL','#e2b23c','#1a1a1a'),1.45,0.3],[signTex('STAY\nSEATED','#e6e2d6','#a3231f'),2.05,-0.2],[signTex('CCTV','#d9d9d9','#1f2a5a'),2.55,0.15]].forEach(([t,y,ry])=>{const m=new THREE.Mesh(new THREE.BoxGeometry(0.62,0.4,0.03),[plastic,plastic,plastic,plastic,tmat(t),plastic]);m.position.set(3.3,y,-3.55);m.rotation.y=ry;scene.add(m)});
+
+/* wall clock (real time, back-desk wall left of the TVs) */
+{
+  const CW=128,CH=64;
+  const cvs=document.createElement('canvas');cvs.width=CW;cvs.height=CH;
+  const ctx=cvs.getContext('2d',{willReadFrequently:false});
+  const tex_=new THREE.CanvasTexture(cvs);tex_.magFilter=tex_.minFilter=THREE.NearestFilter;tex_.colorSpace=THREE.SRGBColorSpace;
+  function paint(){
+    ctx.fillStyle='#0a1214';ctx.fillRect(0,0,CW,CH);
+    ctx.fillStyle='#101a1c';ctx.fillRect(3,3,CW-6,CH-6);
+    // scanlines
+    ctx.fillStyle='rgba(0,0,0,.35)';for(let y=0;y<CH;y+=2)ctx.fillRect(0,y,CW,1);
+    const d=new Date(),hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');
+    ctx.fillStyle='#8ef59a';
+    ctx.font='bold 30px "Press Start 2P", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    // colon blinks at odd seconds
+    const sep=(d.getSeconds()%2)?':':' ';
+    ctx.fillText(hh+sep+mm, CW/2, CH/2+2);
+    tex_.needsUpdate=true;
+  }
+  paint();setInterval(paint,1000);
+  const clockM=new THREE.MeshLambertMaterial({map:tex_,emissive:0x224026,emissiveIntensity:0.6});
+  const bezelM=new THREE.MeshLambertMaterial({color:0x1a1a20});
+  const face=new THREE.Mesh(new THREE.PlaneGeometry(0.55,0.28),clockM);face.position.set(-3.0,2.15,-3.549);scene.add(face);
+  const bezel=new THREE.Mesh(new THREE.BoxGeometry(0.62,0.34,0.04),bezelM);bezel.position.set(-3.0,2.15,-3.57);scene.add(bezel);
+}
+
+/* QR poster: scan to open the card page (linktree-style) */
+{
+  const posterM=new THREE.MeshLambertMaterial({color:0xf4f0e6});
+  const frameM=new THREE.MeshLambertMaterial({color:0x2a1a10});
+  const backing=new THREE.Mesh(new THREE.BoxGeometry(0.82,1.0,0.03),frameM);
+  backing.position.set(-2.05,1.55,-3.555);scene.add(backing);
+  const paper=new THREE.Mesh(new THREE.PlaneGeometry(0.72,0.9),posterM);
+  paper.position.set(-2.05,1.55,-3.539);scene.add(paper);
+  // "SCAN" header + arrow — draw onto a texture for the top strip
+  {
+    const CW=128,CH=32,cvs=document.createElement('canvas');cvs.width=CW;cvs.height=CH;
+    const g=cvs.getContext('2d');g.fillStyle='#f4f0e6';g.fillRect(0,0,CW,CH);
+    g.fillStyle='#0a0a10';g.font='bold 14px "Press Start 2P", monospace';g.textAlign='center';g.textBaseline='middle';
+    g.fillText('SCAN ME',CW/2,CH/2);
+    const t=new THREE.CanvasTexture(cvs);t.magFilter=t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;
+    const strip=new THREE.Mesh(new THREE.PlaneGeometry(0.62,0.14),new THREE.MeshLambertMaterial({map:t}));
+    strip.position.set(-2.05,1.90,-3.537);scene.add(strip);
+  }
+  // QR code image loaded from the pre-generated SVG
+  new THREE.TextureLoader().load('assets/card-qr.svg', tex_=>{
+    tex_.magFilter=tex_.minFilter=THREE.NearestFilter;tex_.colorSpace=THREE.SRGBColorSpace;tex_.anisotropy=1;
+    const qrM=new THREE.MeshLambertMaterial({map:tex_});
+    const qr=new THREE.Mesh(new THREE.PlaneGeometry(0.58,0.58),qrM);
+    qr.position.set(-2.05,1.44,-3.536);scene.add(qr);
+  });
+}
 
 /* clutter */
 for(let i=0;i<14;i++){const p=new THREE.Mesh(new THREE.PlaneGeometry(0.22,0.28),tmat(i%3?T.paper:T.cash,{side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));p.rotation.set(-Math.PI/2,0,rnd(0,6.3));p.position.set(rnd(-3,3),0.045+i*0.002,rnd(-1.4,1.6));scene.add(p)}
