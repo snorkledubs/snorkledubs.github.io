@@ -1,8 +1,25 @@
 # Portfolio
 
-A zero-build personal portfolio. Plain HTML, CSS and JS. No dependencies, no
-framework, nothing to install. Double-click `index.html` and it works. Push it
-to GitHub and it becomes a public website.
+A first-person PS1-style room. You're strapped into a chair facing a desk of
+CRT TVs; each TV is one section. Click a TV to open it while the avatar talks.
+Built on three.js (loaded from unpkg), no build step. Push to GitHub and it's
+a public website.
+
+| File | What it is |
+|---|---|
+| `index.html` | The room. Scene, avatar, customizer, dialogue. |
+| `data.js` | **All your content.** The only file you need to edit. |
+| `classic.html` | Plain scrolling version of the same content, linked as "Plain". |
+| `prototypes/` | Earlier ideas (8-bit house, rolling cube). Kept for parts. |
+| `assets/fonts/` | Press Start 2P and VT323, served locally. |
+
+The room needs a local server to run (browsers block ES modules on `file://`):
+
+```bash
+python -m http.server 8765
+```
+
+then open http://localhost:8765/.
 
 ## Edit your content
 
@@ -13,7 +30,12 @@ Everything you'd ever change lives in **`data.js`**:
 | `SITE`     | Name, role, tagline, email, social links, accent color, avatar |
 | `ABOUT`    | The About paragraph (HTML allowed)                            |
 | `SKILLS`   | Grouped skill tags                                            |
-| `PROJECTS` | The project cards. Order in the file = order on the page      |
+| `PROJECTS` | Project cards. Hidden until `SITE.showProjects` is true       |
+| `TIMELINE` | Experience entries, shown on the WORK screen                  |
+| `EDUCATION`| Shown on the SCHOOL screen                                    |
+| `HOBBIES`  | Shown on the OFF HOURS screen                                 |
+| `BLOG`     | Writeups, shown on the plain page                             |
+| `DIALOGUE` | What the avatar says for each screen. `{name}` = avatar name  |
 
 A project entry:
 

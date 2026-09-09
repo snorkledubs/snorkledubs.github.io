@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azal's House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="house.css">
+</head>
+<body>
+  <div class="hud">
+    <div class="hud-left">
+      <span class="brand" id="brand"></span>
+      <span class="room-name" id="room-name"></span>
+    </div>
+    <div class="hud-right">
+      <span class="hint"><kbd>WASD</kbd> walk &nbsp; <kbd>E</kbd> interact &nbsp; or click things</span>
+      <a href="../classic.html" class="hud-link">plain site</a>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="room-wrap" id="room-wrap">
+      <canvas id="game"></canvas>
+      <div class="bubble" id="bubble" hidden></div>
+    </div>
+  </div>
+
+  <div class="dpad" id="dpad">
+    <button data-key="w">&#9650;</button>
+    <button data-key="a">&#9664;</button>
+    <button data-key="s">&#9660;</button>
+    <button data-key="d">&#9654;</button>
+    <button data-key="e" class="act">E</button>
+  </div>
+
+  <div class="panel-backdrop" id="panel" hidden>
+    <div class="panel" role="dialog" aria-modal="true">
+      <button class="panel-close" id="panel-close" aria-label="Close">&times;</button>
+      <div class="panel-kicker" id="panel-kicker"></div>
+      <h2 class="panel-title" id="panel-title"></h2>
+      <div class="panel-body" id="panel-body"></div>
+      <div class="panel-nav" id="panel-nav" hidden>
+        <button id="panel-prev">&larr; Back</button>
+        <span id="panel-step"></span>
+        <button id="panel-next">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../data.js"></script>
+  <script src="house.js"></script>
+</body>
+</html>

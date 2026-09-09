@@ -139,3 +139,32 @@ const HOUSE = {
     },
   ],
 };
+
+// ============================================================
+//  THE ROOM (index.html). Each TV on the desk is one section.
+//  Text on the screens comes from the sections above, plus these.
+// ============================================================
+const EDUCATION = [
+  { title: "[Degree or course]", where: "[School]", when: "[Years]", desc: "Relevant coursework, thesis, or awards. Delete this entry if you'd rather not list any." },
+];
+
+const HOBBIES = `
+Games, hardware, and taking things apart to see why they work.
+Edit this in <code>data.js</code>, three lines max.
+`;
+
+// What Azal says when a TV is opened. {name} is replaced with the avatar name.
+const DIALOGUE = {
+  intro: [
+    "Hey. I'm {name}. Don't worry about the straps, they're for your own good.",
+    "Everything I've made is on those screens. Look at one and click.",
+  ],
+  about:      ["I'm {name}.", "I write systems code and poke at hardware. This room is where I keep the stuff I've made.", "Look around. Each screen is one thing."],
+  skills:     ["These are the languages I actually use, not the ones I skimmed a tutorial on."],
+  projects:   ["The good stuff. Some finished, some still humming in the background."],
+  experience: ["Where I've been and what I broke, then fixed."],
+  education:  ["Paper says I studied. Code says I learned."],
+  hobbies:    ["When the compiler's quiet."],
+  contact:    ["Chair's yours to leave whenever. Say hi first."],
+  pills:      "yeahhh i might have a problem but its how things get done around here",
+};
