@@ -83,27 +83,24 @@ function say(lines, done){
   onDone=done||null; dlg.classList.add('on'); next();
 }
 function fillCur(){txt.textContent=cur;}
+let wordSpan=null;
 function appendCh(ch){
-  if(currentMood){
-    const sp=document.createElement('span');
-    sp.textContent=ch;
-    sp.style.display='inline-block';
-    const w=Math.random()-0.5;
-    const dy=Math.round(w*3), rot=(w*7).toFixed(1);
-    sp.style.transform=`translateY(${dy}px) rotate(${rot}deg)`;
-    sp.style.transition='transform 500ms';
-    txt.appendChild(sp);
-    // slow settle
-    setTimeout(()=>{const w2=(Math.random()-0.5); sp.style.transform=`translateY(${Math.round(w2*2)}px) rotate(${(w2*3).toFixed(1)}deg)`;}, 260);
-  } else {
-    txt.appendChild(document.createTextNode(ch));
-  }
+  if(!currentMood){txt.appendChild(document.createTextNode(ch));return}
+  if(ch===' '||ch==='\n'){wordSpan=null;txt.appendChild(document.createTextNode(ch));return}
+  if(!wordSpan){wordSpan=document.createElement('span');wordSpan.style.display='inline-block';wordSpan.style.whiteSpace='nowrap';txt.appendChild(wordSpan)}
+  const sp=document.createElement('span');
+  sp.textContent=ch;sp.style.display='inline-block';
+  const w=Math.random()-0.5;
+  sp.style.transform=`translateY(${Math.round(w*3)}px) rotate(${(w*7).toFixed(1)}deg)`;
+  sp.style.transition='transform 500ms';
+  wordSpan.appendChild(sp);
+  setTimeout(()=>{const w2=(Math.random()-0.5);sp.style.transform=`translateY(${Math.round(w2*2)}px) rotate(${(w2*3).toFixed(1)}deg)`}, 260);
 }
 function next(){
   if(typing){clearTimeout(timer);typing=false;fillCur();stopMouth();more.style.display='block';return}
   if(!queue.length){dlg.classList.remove('on');currentMood=null;setFaceMood(null);onDone&&onDone();return}
   const item=queue.shift(); cur=item.text; currentMood=item.mood; setFaceMood(currentMood);
-  let i=0; txt.textContent=''; typing=true; more.style.display='none';
+  let i=0; txt.textContent=''; wordSpan=null; typing=true; more.style.display='none';
   let open=false; mouthT=setInterval(()=>{open=!open;drawFace(face,open)},90);
   const baseDelay=currentMood==='sleepy'?95:currentMood==='lazy'?58:currentMood==='insistent'?24:34;
   const puncDelay=currentMood==='sleepy'?260:currentMood==='insistent'?90:160;
@@ -634,7 +631,9 @@ function renderHead(t){
   if(!fig)return;
   if(!dlg.classList.contains('on')&&!$('cust').classList.contains('on'))return; // nothing shows the head right nowt=performance.now()/1000;
   const blink=AV.face==='eye'&&((t%5.1)<0.1);
-  if(window.__blinkQuad){__blinkQuad.visible=blink;__eye.forEach(q=>q.visible=!blink)}
+  const tweakOn=window.__tweakGrp&&window.__tweakGrp.visible;
+  if(window.__blinkQuad&&AV.face==='eye'&&!tweakOn){__blinkQuad.visible=blink;__eye.forEach(q=>q.visible=!blink)}
+  else if(window.__blinkQuad&&tweakOn){__blinkQuad.visible=false}
   // tweak-face idle: pupils drift, smile wavers
   if(window.__tweakGrp&&window.__tweakGrp.visible){
     window.__tweakEyes && window.__tweakEyes.forEach(e=>{
@@ -731,7 +730,7 @@ function pick(){
     const now=performance.now()/1000,dt=lastT?Math.min(now-lastT,0.1):0;lastT=now;
     const onPills=ray.intersectObjects(pillZones,false).length>0;
     pillGaze=onPills?pillGaze+dt:Math.max(0,pillGaze-dt*2);
-    if(pillGaze>10){pillSaid=true;localStorage.setItem('azal.pillsaid','1');say([SAY.pills||"..."])}
+    if(pillGaze>10){pillSaid=true;localStorage.setItem('azal.pillsaid','1');say([{mood:'lazy',text:SAY.pills||"..."}])}
   }
   const hit=ray.intersectObjects(screens,false)[0];
   const h=hit?hit.object:null;
