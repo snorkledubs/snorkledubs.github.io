@@ -4,14 +4,14 @@
 // ============================================================
 
 const SITE = {
-  name: "Your Name",
+  name: "Azal",
   role: "Software Developer",
   tagline: "I build tools, drivers, and things that poke at hardware.",
   location: "Earth",
-  email: "you@example.com",
+  email: "snorkledubs@gmail.com",
   // Any of these can be removed or left as "".
   links: {
-    github: "https://github.com/yourname",
+    github: "https://github.com/AzalsStuff",
     linkedin: "",
     twitter: "",
     resume: "",            // e.g. "assets/resume.pdf"
@@ -42,7 +42,7 @@ const PROJECTS = [
     description: "Direct-memory-access research toolkit for reading and writing physical memory over PCIe with a custom FPGA firmware.",
     tags: ["C++", "Hardware", "PCIe"],
     image: "",                       // e.g. "assets/dma.png"
-    repo: "https://github.com/yourname/dma-engine",
+    repo: "https://github.com/AzalsStuff/dma-engine",
     demo: "",
     featured: true,
   },
