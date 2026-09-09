@@ -10,6 +10,8 @@
 <meta name="theme-color" content="#07090f">
 <link rel="preload" href="assets/fonts/7fb4b2b2.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/f3a345e9.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="modulepreload" href="room.bundle.js">
+<link rel="preload" href="data.js" as="script">
 <link rel="stylesheet" href="room.css">
 </head>
 <body>
@@ -50,7 +52,7 @@
 
 <div id="dlg"><canvas id="face" width="200" height="200"></canvas><div id="txt"></div><div id="more">▼</div></div>
 
-<script src="data.js"></script>
+<script src="data.js" defer></script>
 <script type="module" src="room.bundle.js"></script>
 
 

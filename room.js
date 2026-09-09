@@ -235,6 +235,7 @@ scene.background=new THREE.Color(0x0a0f1c);
 scene.fog=new THREE.FogExp2(0x0a0f1c,0.05);
 const camera=new THREE.PerspectiveCamera(62,1,0.2,120);
 const EYE=new THREE.Vector3(0,1.18,1.7); camera.position.copy(EYE);
+const _hoverPos=new THREE.Vector3();
 
 let IH=300, IW=400;
 function resize(){const w=innerWidth,h=innerHeight;IH=300;IW=Math.round(IH*w/h);renderer.setSize(IW,IH,false);if(window.snapRes)snapRes.value.set(IW,IH);camera.aspect=w/h;camera.updateProjectionMatrix()}
@@ -783,7 +784,7 @@ function frame(){
   lamp.intensity=13+Math.sin(t*9)*0.6+(Math.random()<0.02?-4:0);
   glow.intensity=5.5+Math.sin(t*20)*0.5;
   vatsM.opacity=0.35+Math.sin(t*6)*0.2;
-  if(hovered){const p=new THREE.Vector3();hovered.getWorldPosition(p);hoverLight.position.copy(p).add(new THREE.Vector3(0,0,0.6));hoverLight.intensity=6+Math.sin(t*6)*2}else hoverLight.intensity=0;
+  if(hovered){hovered.getWorldPosition(_hoverPos);hoverLight.position.copy(_hoverPos);hoverLight.position.z+=0.6;hoverLight.intensity=6+Math.sin(t*6)*2}else hoverLight.intensity=0;
   bulb.material.color.setHSL(0.1,0.7,lamp.intensity>10?0.85:0.5);
   if(!active)pick();
   renderer.render(scene,camera);
