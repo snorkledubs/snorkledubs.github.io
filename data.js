@@ -160,4 +160,18 @@ const DIALOGUE = {
   hobbies:    ["When the compiler's quiet."],
   contact:    ["Chair's yours to leave whenever. Say hi first."],
   pills:      "yeahhh i might have a problem but its how things get done around here",
+  adder: [
+    "you want an adderall?",
+    "hey — you want an adderall?",
+    "one adderall? come on.",
+    "you sure you don't want an adderall?",
+    "you look like you could use an adderall.",
+    "adderall? i've got extras.",
+    "want one? adderall, i mean.",
+    "you good? want an adderall?",
+    "you want an addy?",
+    "i'm just saying, i have adderall.",
+    "seriously though. adderall?",
+    "you want one before we keep going?",
+  ],
 };

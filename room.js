@@ -671,9 +671,19 @@ canvas.addEventListener('click',()=>{
 const _close=closeSection;closeSection=function(){_close();tFov=62;tEye.copy(EYE);if(lookMode==='mouse')look(innerWidth/2+mx*innerWidth/2,innerHeight/2+my*innerHeight/2)};
 $('bClose').onclick=()=>closeSection();
 
+/* recurring adderall offer */
+const ADDER=(Array.isArray(SAY.adder)&&SAY.adder.length)?SAY.adder:["you want an adderall?"];
+let adderT=null;
+function scheduleAdder(){clearTimeout(adderT);const ms=(25+Math.random()*35)*1000;adderT=setTimeout(fireAdder,ms)}
+function fireAdder(){
+  const custOn=document.getElementById('cust').classList.contains('on');
+  const idle=!dlg.classList.contains('on')&&!active&&!custOn;
+  if(idle){const line=ADDER[Math.floor(Math.random()*ADDER.length)];say([line])}
+  scheduleAdder();
+}
 /* intro */
 let started=false;
-function intro(){if(started)return;started=true;setTimeout(()=>say((SAY.intro||["Hey. I'm {name}."]).map(l=>l.replace(/\{name\}/g,AV.name))),600)}
+function intro(){if(started)return;started=true;setTimeout(()=>say((SAY.intro||["Hey. I'm {name}."]).map(l=>l.replace(/\{name\}/g,AV.name))),600);scheduleAdder()}
 addEventListener('pointerdown',intro,{once:true});addEventListener('keydown',intro,{once:true});
 setTimeout(intro,2500);
 
