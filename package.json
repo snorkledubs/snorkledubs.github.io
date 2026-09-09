@@ -1,0 +1,12 @@
+{
+  "name": "azal-portfolio",
+  "private": true,
+  "description": "Rebuild room.bundle.js after editing room.js. data.js needs no build.",
+  "scripts": {
+    "build": "esbuild room.js --bundle --format=esm --minify --target=es2020 --legal-comments=none --outfile=room.bundle.js",
+    "serve": "python -m http.server 8765"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}

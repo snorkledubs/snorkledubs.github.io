@@ -2,16 +2,27 @@
 
 A first-person PS1-style room. You're strapped into a chair facing a desk of
 CRT TVs; each TV is one section. Click a TV to open it while the avatar talks.
-Built on three.js (loaded from unpkg), no build step. Push to GitHub and it's
-a public website.
+Built on three.js, vendored and bundled, so the site has no runtime dependency
+on any third-party server. Push to GitHub and it's a public website.
 
 | File | What it is |
 |---|---|
-| `index.html` | The room. Scene, avatar, customizer, dialogue. |
+| `index.html` | The room's HTML shell. Loads `data.js` and `room.bundle.js`. |
+| `room.js` | The room's source: scene, avatar, customizer, dialogue. Edit this, then rebuild. |
+| `room.bundle.js` | Built output: `room.js` + the parts of three.js it uses, minified. This is what the site loads. |
+| `room.css` | Room styles and local font faces. |
+| `vendor/` | three.js 0.184.0, verified against its published SRI hashes. |
 | `data.js` | **All your content.** The only file you need to edit. |
 | `classic.html` | Plain scrolling version of the same content, linked as "Plain". |
 | `prototypes/` | Earlier ideas (8-bit house, rolling cube). Kept for parts. |
 | `assets/fonts/` | Press Start 2P and VT323, served locally. |
+
+**Editing `data.js` never needs a build.** If you change `room.js`, rebuild the
+bundle (needs Node; downloads esbuild the first time):
+
+```bash
+npx --yes esbuild@0.24.2 room.js --bundle --format=esm --minify --target=es2020 --legal-comments=none --outfile=room.bundle.js
+```
 
 The room needs a local server to run (browsers block ES modules on `file://`):
 
@@ -91,3 +102,13 @@ open them, but the link is preserved.
 
 Large binaries, build outputs and secrets should not go in git. Use a
 `.gitignore` per project.
+
+## Security notes
+
+- Every page ships a strict Content Security Policy: scripts, styles and fonts
+  only from this origin, no inline script, no external connections. The
+  prototypes additionally allow Google Fonts.
+- No analytics, no third-party scripts, no cookies. The room stores the avatar
+  and look-mode preferences in `localStorage` only.
+- `data.js` is trusted content you write yourself. It is inserted as HTML in a
+  few places (About, Hobbies), so don't paste untrusted text into it.
