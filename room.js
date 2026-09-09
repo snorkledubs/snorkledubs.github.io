@@ -1,5 +1,21 @@
 import * as THREE from './vendor/three.module.js';
 
+/* ---------- loading screen: random subtitle before first paint ---------- */
+{
+  const SUBS=[
+    "CH ∅∅ · WARMING UP",
+    "CH ∅∅ · SIGNAL LOCK",
+    "CH ∅∅ · ADJUSTING RABBIT EARS",
+    "CH ∅∅ · DEGAUSSING",
+    "CH ∅∅ · CHECKING THE STRAPS",
+    "CH ∅∅ · TAKING A LOOK AT YOU",
+    "CH ∅∅ · LOADING PILLS",
+    "CH ∅∅ · PLEASE HOLD",
+  ];
+  const el=document.getElementById('loadingSub');
+  if(el) el.textContent=SUBS[Math.floor(Math.random()*SUBS.length)];
+}
+
 /* ---------- content (from data.js) ---------- */
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SAY=(typeof DIALOGUE!=='undefined')?DIALOGUE:{};
@@ -712,9 +728,15 @@ document.addEventListener('pointerlockchange',()=>{showMode();povCursor()});
 canvas.addEventListener('pointerdown',()=>{if(lookMode==='pov'&&!document.pointerLockElement&&!active)canvas.requestPointerLock?.()});
 addEventListener('pointermove',e=>{
   if(lookMode==='pov'){if(document.pointerLockElement&&!active){tYaw=THREE.MathUtils.clamp(tYaw-e.movementX*0.0022,-YAW,YAW);tPitch=THREE.MathUtils.clamp(tPitch-e.movementY*0.0022,-PIT_DN,PIT_UP)}return}
-  if(matchMedia('(pointer:fine)').matches&&!e.buttons)look(e.clientX,e.clientY);else if(dragging){tYaw+=(e.clientX-lx)*0.004;tPitch+=(e.clientY-ly)*0.003;tYaw=THREE.MathUtils.clamp(tYaw,-YAW,YAW);tPitch=THREE.MathUtils.clamp(tPitch,-PIT_DN,PIT_UP);lx=e.clientX;ly=e.clientY}});
-addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY});
+  const touch=e.pointerType==='touch';
+  if(matchMedia('(pointer:fine)').matches&&!touch&&!e.buttons)look(e.clientX,e.clientY);
+  else if(dragging){const sx=touch?0.007:0.004, sy=touch?0.006:0.003;
+    tYaw+=(e.clientX-lx)*sx;tPitch+=(e.clientY-ly)*sy;
+    tYaw=THREE.MathUtils.clamp(tYaw,-YAW,YAW);tPitch=THREE.MathUtils.clamp(tPitch,-PIT_DN,PIT_UP);
+    lx=e.clientX;ly=e.clientY}});
+addEventListener('pointerdown',e=>{if(e.target.closest?.('#cust,#panel,#topL,#topR,#remote,#dlg'))return;dragging=true;lx=e.clientX;ly=e.clientY});
 addEventListener('pointerup',()=>dragging=false);
+addEventListener('pointercancel',()=>dragging=false);
 
 const ray=new THREE.Raycaster();const center=new THREE.Vector2(0,0);
 let hovered=null;const label=$('label'),dot=$('dot');

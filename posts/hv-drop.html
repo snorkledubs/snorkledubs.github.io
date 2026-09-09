@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>hv-drop — Azal</title>
+<meta name="description" content="Notes on building a small hypervisor substrate for Windows 11.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#07090f">
+<link rel="canonical" href="https://snorkledubs.github.io/posts/hv-drop.html">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hv-drop">
+<meta property="og:description" content="A small hypervisor substrate for Windows 11.">
+<meta property="og:image" content="https://snorkledubs.github.io/assets/og.svg">
+<link rel="stylesheet" href="../room.css">
+<link rel="stylesheet" href="post.css">
+</head>
+<body class="post">
+<a class="back" href="../">&larr; back to the room</a>
+<article>
+  <header>
+    <div class="tv-title">CH 07 · WRITEUP</div>
+    <h1>hv-drop</h1>
+    <div class="meta">2026-07-14 · hypervisor, kernel driver, windows</div>
+  </header>
+
+  <p>
+    hv-drop is the substrate underneath the real work: a small,
+    signed kernel driver that Windows 11 will load as a demand-start
+    service on a fresh test box, plus the batch file that gets a box
+    into a state where it will let you.
+  </p>
+  <p>
+    It's not a hypervisor in the "run guest operating systems" sense.
+    It's the piece that comes first — the driver, the boot config,
+    the certificates. What runs on top of it is what I actually
+    care about.
+  </p>
+
+  <h2>Why do this by hand</h2>
+  <p>
+    You can go download a driver-signing service, upload a .sys file,
+    get a cert back, install it. That's how the polished projects
+    look. It's also how you learn nothing. I wanted to know what
+    <code>bcdedit /set testsigning on</code> was actually toggling,
+    what <code>certutil -addstore TrustedPublisher</code> puts into
+    the store, and why <code>sc create ... type= kernel</code> works
+    at all.
+  </p>
+
+  <h2>What the deploy actually does</h2>
+  <p>The <code>install.bat</code> is a one-shot. On a fresh Windows 11
+  test box, running as Administrator, it:</p>
+  <ol>
+    <li>Copies <code>hyperv.sys</code>, the loader, and the test-sign
+      cert to <code>C:\hv-drop\</code>. Fixed path, no ambiguity.</li>
+    <li>Installs the cert into both <code>Root</code> and
+      <code>TrustedPublisher</code>. Kernel loader wants both.</li>
+    <li>Enables test-signing via <code>bcdedit</code>, then turns off
+      <em>automatic restart on failure</em>. That last one matters:
+      if the driver bugchecks, I want to read the code, not blink at
+      a reboot loop.</li>
+    <li>Registers the driver as a demand-start kernel service.
+      Does <em>not</em> start it. That happens after the machine
+      reboots so testsigning is in effect.</li>
+  </ol>
+
+  <h2>The BSOD I actually wanted</h2>
+  <p>
+    The interesting failure mode isn't a load-time reject — it's a
+    late crash from something I did in <code>DriverEntry</code>. I
+    left auto-reboot off precisely so I could stand there, read
+    <code>PAGE_FAULT_IN_NONPAGED_AREA</code>, and know I dereferenced
+    a UNICODE_STRING before initialising it. The first three iterations
+    were exactly that.
+  </p>
+
+  <h2>What's next</h2>
+  <p>
+    The substrate exists. The real project sits on top of it and
+    stays private for now.
+  </p>
+
+  <footer>
+    <a class="back" href="../">back to the room</a>
+  </footer>
+</article>
+</body></html>

@@ -1,0 +1,19 @@
+/* writeup pages: same visual world as the room, but readable long-form */
+html,body{background:#07090f;color:#e6e2d6;cursor:auto;overflow:auto;font-family:'VT323',monospace}
+body.post{padding:40px 20px 80px;display:block;font-size:22px;line-height:1.55}
+a{color:#8ef59a;text-decoration:none;border-bottom:1px solid rgba(142,245,154,.4)}
+a:hover{color:#fff;border-color:#fff}
+.back{display:inline-block;margin-bottom:24px;font-family:'Press Start 2P',monospace;font-size:12px;letter-spacing:1px}
+article{max-width:720px;margin:0 auto;background:#0e0e14;border:3px solid #e6e2d6;box-shadow:0 0 0 3px #0e0e14,0 0 0 6px #e6e2d6;padding:36px 40px;position:relative}
+article::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.28) 3px 4px);mix-blend-mode:multiply}
+header{border-bottom:2px dashed #3a3a44;padding-bottom:20px;margin-bottom:24px}
+.tv-title{font-family:'Press Start 2P',monospace;font-size:12px;letter-spacing:2px;color:#8ef59a;margin-bottom:12px}
+h1{font-family:'Press Start 2P',monospace;font-size:28px;letter-spacing:2px;color:#e6e2d6;margin:0 0 8px;text-shadow:2px 0 #a3231f,-2px 0 #1f2a5a}
+h2{font-family:'Press Start 2P',monospace;font-size:16px;letter-spacing:1px;color:#e2b23c;margin:32px 0 12px}
+.meta{color:#a09984;font-size:16px;letter-spacing:1px}
+p{margin:14px 0}
+ol,ul{padding-left:26px;margin:14px 0}
+li{margin:8px 0}
+code{background:#141a1e;color:#8ef59a;padding:2px 6px;border-radius:2px;font-family:'VT323',monospace;font-size:20px}
+em{color:#e2b23c;font-style:normal}
+footer{margin-top:40px;padding-top:20px;border-top:2px dashed #3a3a44}

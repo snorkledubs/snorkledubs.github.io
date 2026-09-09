@@ -49,8 +49,7 @@ const TIMELINE = [
 
 // Writeups. `url` can be a page in this repo (e.g. "posts/dma-notes.html") or external.
 const BLOG = [
-  { date: "2026-09-01", title: "Notes on getting a DMA card recognised", summary: "What actually mattered: firmware IDs, link training, and the driver side.", url: "" },
-  { date: "2026-07-14", title: "A tiny hypervisor, and what it taught me", summary: "Building hv-drop from scratch and the debugging that came with it.", url: "" },
+  { date: "2026-07-14", title: "hv-drop, and what it taught me", summary: "Building a Windows 11 hypervisor substrate from scratch — the driver, the boot config, and the BSOD I actually wanted.", url: "posts/hv-drop.html" },
 ];
 
 // Projects appear in this order. Hidden until SITE.showProjects is true. Each needs at least title + description.
