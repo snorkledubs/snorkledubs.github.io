@@ -465,9 +465,39 @@ window.buildHead=function(){
     quad(0.5,0.025,0.01,ey-0.19,Z+0.002,bagM,'bag1');quad(0.36,0.02,0.03,ey-0.24,Z+0.002,bagM,'bag2');
     [-1,1].forEach(s=>quad(0.03,0.05,s*0.25,ey-0.17,Z+0.002,bagM));
   }else{
-    [-0.32,0.32].forEach(ox=>{quad(0.3,0.06,ox,0.25,Z,inkM);quad(0.06,0.05,ox-0.16,0.29,Z,inkM);quad(0.06,0.05,ox+0.16,0.29,Z,inkM)});
-    quad(1.3,0.3,0,-0.1,Z,inkM);quad(1.2,0.16,0,-0.1,Z+0.002,starC.getHSL({}).l<0.4?hmat({color:0x15131a}):hmat({color:0xf4f2ea}));
-    for(let i=1;i<8;i++)quad(0.02,0.16,-0.6+i*0.15,-0.1,Z+0.004,inkM);quad(1.2,0.02,0,-0.1,Z+0.004,inkM);
+    // ==== semi-troll face: squinty angry brows + wide curled grin, all animated ====
+    const brows=window.__brows=[];
+    const eyeY=0.22;
+    [-0.24,0.24].forEach(ox=>{
+      const inward=ox<0?1:-1;
+      // three-stub brow angled down toward the nose
+      for(let k=0;k<3;k++){
+        const bx=ox+(k-1)*0.075;
+        const by=eyeY+0.11-(k*inward)*0.025;
+        const b=quad(0.078,0.032,bx,by,Z,inkM,'brow');
+        brows.push({mesh:b,bx,by,side:inward,k});
+      }
+      // squinty slit
+      const slit=quad(0.22,0.035,ox,eyeY,Z+0.001,inkM,'slit');
+      brows.push({mesh:slit,bx:ox,by:eyeY,side:inward,k:-1});
+      // pupil gleam
+      quad(0.04,0.03,ox+inward*-0.04,eyeY,Z+0.004,starM,'gleam');
+    });
+    // grin as a chain of segments; right-side curl for the troll smirk
+    const inkC2=starC.getHSL({}).l<0.4?0xf4f2ea:0x15131a;
+    const toothM=hmat({color:inkC2});
+    const segs=window.__grinSegs=[], teeth=window.__grinTeeth=[], divs=window.__grinDivs=[];
+    const N=18, GW=1.05, GY=-0.16, sw=GW/N;
+    for(let i=0;i<N;i++){
+      const t=i/(N-1), x=-GW/2+sw/2+t*GW;
+      segs.push({mesh:quad(sw*1.2,0.14,x,GY,Z+0.0005,inkM,'grin'),t,x});
+      teeth.push({mesh:quad(sw*0.95,0.07,x,GY,Z+0.003,toothM,'tooth'),t,x});
+    }
+    for(let i=1;i<8;i++){
+      const t=i/8, x=-GW/2+t*GW;
+      divs.push({mesh:quad(0.018,0.07,x,GY,Z+0.005,inkM,'div'),t,x});
+    }
+    window.__grinBase={GY,GW};
   }
   const back=new THREE.Mesh(new THREE.ShapeGeometry(shape),starM);back.position.z=-0.125;back.rotation.y=Math.PI;head.add(back);
   // point tips (outer vertices)
@@ -524,6 +554,26 @@ function renderHead(t){
   if(!dlg.classList.contains('on')&&!$('cust').classList.contains('on'))return; // nothing shows the head right nowt=performance.now()/1000;
   const blink=AV.face==='eye'&&((t%5.1)<0.1);
   if(window.__blinkQuad){__blinkQuad.visible=blink;__eye.forEach(q=>q.visible=!blink)}
+  // dynamic troll grin: baseline dip, right-side smirk curl, speaking wobble
+  if(AV.face==='grin'&&window.__grinSegs){
+    const talking=mouthOpen?1:0, w=talking?9:2.3;
+    const base=window.__grinBase.GY;
+    const curl=0.16+Math.sin(t*1.1)*0.03+talking*Math.abs(Math.sin(t*w))*0.07;
+    const skew=Math.sin(t*0.7)*0.012+talking*Math.sin(t*w*0.6)*0.018;
+    const curveY=(tt)=>{
+      const dip=Math.sin(tt*Math.PI)*0.022;
+      const troll=Math.pow(Math.max(0,tt-0.55)/0.45,1.4)*curl;
+      const wob=Math.sin(t*w+tt*11)*0.006*(0.35+talking);
+      return base-dip+troll+wob+skew*(tt-0.5);
+    };
+    window.__grinSegs.forEach(s=>{s.mesh.position.y=curveY(s.t)});
+    window.__grinTeeth.forEach(s=>{s.mesh.position.y=curveY(s.t)});
+    window.__grinDivs.forEach(s=>{s.mesh.position.y=curveY(s.t)});
+    if(window.__brows){window.__brows.forEach(b=>{
+      const lift=talking?Math.sin(t*w+b.side*1.2+b.k*0.5)*0.018:Math.sin(t*1.4+b.side)*0.006;
+      b.mesh.position.y=b.by+lift;
+    })}
+  }
   head.rotation.y=Math.sin(t*0.8)*0.1+(mouthOpen?Math.sin(t*14)*0.03:0);
   head.rotation.z=Math.sin(t*0.6)*0.06+(mouthOpen?Math.sin(t*11)*0.04:0);
   head.rotation.x=(mouthOpen?Math.sin(t*9)*0.03:0);
