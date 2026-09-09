@@ -69,14 +69,46 @@ function blip(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();co
 /* ---------- dialogue ---------- */
 const dlg=$('dlg'), txt=$('txt'), more=$('more');
 let queue=[], typing=false, timer=null, mouthT=null, onDone=null;
-function say(lines, done){queue=[...lines];onDone=done||null;dlg.classList.add('on');next()}
+let currentMood=null;
+window.__currentMood=()=>currentMood;
+window.__say=(...args)=>say(...args);
+function setFaceMood(m){
+  const tw=window.__tweakGrp, rp=window.__restingPieces;
+  if(!tw||!rp)return;
+  const useTweak=(m==='sleepy'||m==='lazy'||m==='spaced');
+  tw.visible=useTweak; rp.forEach(p=>p.visible=!useTweak);
+}
+function say(lines, done){
+  queue=lines.map(l=>typeof l==='string'?{text:l,mood:null}:{text:l.text||'',mood:l.mood||null});
+  onDone=done||null; dlg.classList.add('on'); next();
+}
+function fillCur(){txt.textContent=cur;}
+function appendCh(ch){
+  if(currentMood){
+    const sp=document.createElement('span');
+    sp.textContent=ch;
+    sp.style.display='inline-block';
+    const w=Math.random()-0.5;
+    const dy=Math.round(w*3), rot=(w*7).toFixed(1);
+    sp.style.transform=`translateY(${dy}px) rotate(${rot}deg)`;
+    sp.style.transition='transform 500ms';
+    txt.appendChild(sp);
+    // slow settle
+    setTimeout(()=>{const w2=(Math.random()-0.5); sp.style.transform=`translateY(${Math.round(w2*2)}px) rotate(${(w2*3).toFixed(1)}deg)`;}, 260);
+  } else {
+    txt.appendChild(document.createTextNode(ch));
+  }
+}
 function next(){
-  if(typing){clearTimeout(timer);typing=false;txt.textContent=cur;stopMouth();more.style.display='block';return}
-  if(!queue.length){dlg.classList.remove('on');onDone&&onDone();return}
-  cur=queue.shift(); let i=0; txt.textContent=''; typing=true; more.style.display='none';
+  if(typing){clearTimeout(timer);typing=false;fillCur();stopMouth();more.style.display='block';return}
+  if(!queue.length){dlg.classList.remove('on');currentMood=null;setFaceMood(null);onDone&&onDone();return}
+  const item=queue.shift(); cur=item.text; currentMood=item.mood; setFaceMood(currentMood);
+  let i=0; txt.textContent=''; typing=true; more.style.display='none';
   let open=false; mouthT=setInterval(()=>{open=!open;drawFace(face,open)},90);
-  const step=()=>{ if(!typing) return; const ch=cur[i++]; txt.textContent+=ch; if(ch!==' '&&i%2)beep();
-    if(i<cur.length) timer=setTimeout(step, /[.,!?]/.test(ch)?160:34); else {typing=false;stopMouth();more.style.display='block'} };
+  const baseDelay=currentMood==='sleepy'?95:currentMood==='lazy'?58:currentMood==='insistent'?24:34;
+  const puncDelay=currentMood==='sleepy'?260:currentMood==='insistent'?90:160;
+  const step=()=>{ if(!typing) return; const ch=cur[i++]; appendCh(ch); if(ch!==' '&&i%2)beep();
+    if(i<cur.length) timer=setTimeout(step, /[.,!?]/.test(ch)?puncDelay:baseDelay); else {typing=false;stopMouth();more.style.display='block'} };
   step();
 }
 let cur='';
@@ -178,7 +210,7 @@ function channel(dir){
 function pressOK(){const p=pages[page];if(dlg.classList.contains('on')){next();return}if(p&&p.link)window.open(p.link,'_blank','noopener')}
 function closeSection(){
   active=null;document.body.style.cursor='none';$('dot').style.opacity=.9;if(typeof showMode==='function'){showMode();povCursor()}
-  panel.classList.remove('on');dlg.classList.remove('on');queue=[];clearTimeout(timer);typing=false;stopMouth();
+  panel.classList.remove('on');dlg.classList.remove('on');queue=[];clearTimeout(timer);typing=false;stopMouth();currentMood=null;setFaceMood(null);
   clearTimeout(glitchT);remote.hidden=true;
   if(watching){watching.material.map=watching.userData.cold;watching.material.needsUpdate=true;watching=null}
 }
@@ -451,6 +483,7 @@ window.buildHead=function(){
   const inkC=starC.getHSL({}).l<0.4?0xf2eee4:0x15100f;const inkM=hmat({color:inkC}),irisM=hmat({color:AV.eyeC}),pupM=hmat({color:0x000000}),glintM=hmat({color:0xffffff});
   const quad=(w,hgt,x,y,z,m,name)=>{const q=new THREE.Mesh(new THREE.PlaneGeometry(w,hgt),m);q.position.set(x,y,z);q.name=name||'';head.add(q);return q};
   const Z=0.125;
+  const restingStart=head.children.length;
   window.__eye=[];
   if(AV.face==='eye'){
     const ey=-0.05;
@@ -494,6 +527,43 @@ window.buildHead=function(){
       divs.push({mesh:quad(0.016,0.055,x,GY,Z+0.005,inkM,'div'),t,x});
     }
     window.__grinBase={GY,GW};
+  }
+  // remember which pieces are the resting face so we can hide them for tweak mode
+  window.__restingPieces=head.children.slice(restingStart);
+  // ==== tweak/spun face: big round eyes, tiny wobbly smile — matches the "peek" meme ====
+  {
+    const tweakGrp=new THREE.Group(); tweakGrp.visible=false; head.add(tweakGrp);
+    window.__tweakGrp=tweakGrp;
+    const paperM=hmat({color:starC.getHSL({}).l<0.4?0xe8e2d0:0xf6f2e6});
+    const tweakY=0.05;
+    const tweakEyes=window.__tweakEyes=[];
+    [-0.30,0.30].forEach((ox,i)=>{
+      const white=new THREE.Mesh(new THREE.CircleGeometry(0.20,12),paperM);white.position.set(ox,tweakY,Z);tweakGrp.add(white);
+      const ring=new THREE.Mesh(new THREE.RingGeometry(0.20,0.245,14),inkM);ring.position.set(ox,tweakY,Z+0.001);tweakGrp.add(ring);
+      const pup=new THREE.Mesh(new THREE.CircleGeometry(0.115,10),pupM);
+      const px=ox+(i?-0.015:0.015), py=tweakY+(i?0.005:-0.005);
+      pup.position.set(px,py,Z+0.003);tweakGrp.add(pup);
+      tweakEyes.push({mesh:pup,cx:ox,cy:tweakY,side:i?-1:1});
+      const glint=new THREE.Mesh(new THREE.CircleGeometry(0.028,8),glintM);glint.position.set(ox-0.045,tweakY+0.05,Z+0.005);tweakGrp.add(glint);
+    });
+    // scribbled hairline above the eyes
+    for(let i=0;i<6;i++){
+      const t=(i/5-0.5)*0.75;
+      const s=new THREE.Mesh(new THREE.PlaneGeometry(0.13,0.026),inkM);
+      s.position.set(t, 0.36 + Math.sin(i*1.7)*0.04, Z+0.002);
+      s.rotation.z=Math.sin(i*2.1)*0.4;
+      tweakGrp.add(s);
+    }
+    // tiny wobbly smile
+    const smile=window.__tweakSmile=[];
+    for(let i=0;i<7;i++){
+      const t=(i/6-0.5);
+      const s=new THREE.Mesh(new THREE.PlaneGeometry(0.05,0.028),inkM);
+      s.position.set(t*0.28, -0.28 + Math.abs(t)*0.06, Z+0.002);
+      s.rotation.z=t*0.35;
+      tweakGrp.add(s);
+      smile.push({mesh:s,t,baseY:-0.28+Math.abs(t)*0.06});
+    }
   }
   const back=new THREE.Mesh(new THREE.ShapeGeometry(shape),starM);back.position.z=-0.125;back.rotation.y=Math.PI;head.add(back);
   // point tips (outer vertices)
@@ -565,11 +635,26 @@ function renderHead(t){
   if(!dlg.classList.contains('on')&&!$('cust').classList.contains('on'))return; // nothing shows the head right nowt=performance.now()/1000;
   const blink=AV.face==='eye'&&((t%5.1)<0.1);
   if(window.__blinkQuad){__blinkQuad.visible=blink;__eye.forEach(q=>q.visible=!blink)}
-  // dynamic troll grin: baseline dip, right-side smirk curl, speaking wobble
+  // tweak-face idle: pupils drift, smile wavers
+  if(window.__tweakGrp&&window.__tweakGrp.visible){
+    window.__tweakEyes && window.__tweakEyes.forEach(e=>{
+      const dx=Math.sin(t*1.7+e.side)*0.02, dy=Math.cos(t*1.3+e.side*2)*0.015;
+      e.mesh.position.x=e.cx+e.side*0.015+dx;
+      e.mesh.position.y=e.cy+dy;
+    });
+    window.__tweakSmile && window.__tweakSmile.forEach(s=>{
+      s.mesh.position.y=s.baseY+Math.sin(t*4+s.t*6)*0.008;
+      s.mesh.rotation.z=s.t*0.35+Math.sin(t*3+s.t*4)*0.08;
+    });
+  }
+  // dynamic troll grin: baseline dip, right-side smirk curl, speaking wobble; mood biases the shape
   if(AV.face==='grin'&&window.__grinSegs){
+    const mood=window.__currentMood?window.__currentMood():null;
+    const moodCurl=mood==='smug'?1.4:mood==='insistent'?1.1:mood==='sleepy'?0.5:mood==='lazy'?0.6:1;
+    const moodBrow=mood==='insistent'?1.6:mood==='smug'?1.2:mood==='sleepy'?0.4:mood==='lazy'?0.5:1;
     const talking=mouthOpen?1:0, w=talking?9:2.3;
     const base=window.__grinBase.GY;
-    const curl=0.16+Math.sin(t*1.1)*0.03+talking*Math.abs(Math.sin(t*w))*0.07;
+    const curl=(0.16+Math.sin(t*1.1)*0.03+talking*Math.abs(Math.sin(t*w))*0.07)*moodCurl;
     const skew=Math.sin(t*0.7)*0.012+talking*Math.sin(t*w*0.6)*0.018;
     const curveY=(tt)=>{
       const dip=Math.sin(tt*Math.PI)*0.022;
@@ -581,7 +666,7 @@ function renderHead(t){
     window.__grinTeeth.forEach(s=>{s.mesh.position.y=curveY(s.t)});
     window.__grinDivs.forEach(s=>{s.mesh.position.y=curveY(s.t)});
     if(window.__brows){window.__brows.forEach(b=>{
-      const lift=talking?Math.sin(t*w+b.side*1.2+b.k*0.5)*0.018:Math.sin(t*1.4+b.side)*0.006;
+      const lift=(talking?Math.sin(t*w+b.side*1.2+b.k*0.5)*0.018:Math.sin(t*1.4+b.side)*0.006)*moodBrow;
       b.mesh.position.y=b.by+lift;
     })}
   }
