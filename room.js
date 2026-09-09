@@ -20,6 +20,79 @@ if(matchMedia('(pointer:coarse)').matches){
   const h=document.getElementById('hint');
   if(h) h.textContent='TAP A TV · DRAG TO LOOK';
 }
+/* clock-driven room lighting: dim at night, warm in the day */
+const NIGHT_FACTOR=(()=>{
+  const h=new Date().getHours();
+  if(h>=22||h<6) return 0.55;   // night
+  if(h>=10&&h<=16) return 1.0;  // midday
+  return 0.78;                   // dusk/dawn
+})();
+/* achievement toaster */
+const ACH=(()=>{
+  const KEY='azal.ach2';
+  const state=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}})();
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+  const box=document.getElementById('ach');
+  const DEFS={
+    first_tv:  {title:"CHANNEL SURFING", body:"opened your first TV"},
+    all_tvs:   {title:"COMPLETIONIST", body:"watched every channel"},
+    seated_5:  {title:"COMFORTABLY STRAPPED", body:"5 minutes in the chair"},
+    seated_15: {title:"REGULAR", body:"15 minutes in the chair"},
+    ten_addies:{title:"POLITELY DECLINING", body:"turned down 10 addies"},
+    konami:    {title:"OLD SCHOOL", body:"you know the code"},
+  };
+  function pop(id){
+    if(state[id]||!DEFS[id])return; state[id]=Date.now(); save();
+    const d=DEFS[id], el=document.createElement('div');
+    el.className='a'; el.innerHTML=`<b>${d.title}</b>${d.body}`;
+    box.appendChild(el);
+    requestAnimationFrame(()=>el.classList.add('on'));
+    try{if(window.zap)zap()}catch(e){}
+    setTimeout(()=>{el.classList.remove('on'); setTimeout(()=>el.remove(),400)}, 3400);
+  }
+  function markViewed(id){
+    state.viewed=state.viewed||{}; state.viewed[id]=true; save();
+    if(!state.first_tv) pop('first_tv');
+    const total=(typeof SECTIONS!=='undefined')?SECTIONS.length:8;
+    if(Object.keys(state.viewed).length>=total) pop('all_tvs');
+  }
+  function offered(){ state.addies=(state.addies||0)+1; save();
+    if(state.addies>=10) pop('ten_addies');
+  }
+  // seat timer starts on first user interaction
+  let seat0=null;
+  addEventListener('pointerdown',()=>{seat0=seat0||Date.now()},{once:true});
+  addEventListener('keydown',   ()=>{seat0=seat0||Date.now()},{once:true});
+  setInterval(()=>{ if(!seat0)return;
+    const m=(Date.now()-seat0)/60000;
+    if(m>=5) pop('seated_5');
+    if(m>=15) pop('seated_15');
+  }, 15000);
+  return {pop, markViewed, offered};
+})();
+// respect reduced-motion for the anim-heavy overlays
+const REDUCED=matchMedia('(prefers-reduced-motion:reduce)').matches;
+/* CRT cursor trail (desktop only) */
+if(!matchMedia('(pointer:coarse)').matches && !REDUCED){
+  const N=6, trails=[];
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='trail'; d.style.opacity=(1-i/N)*0.7;
+    document.body.appendChild(d);
+    trails.push({el:d,x:innerWidth/2,y:innerHeight/2});
+  }
+  let tmx=innerWidth/2,tmy=innerHeight/2;
+  addEventListener('pointermove',e=>{if(e.pointerType!=='touch'){tmx=e.clientX;tmy=e.clientY}});
+  (function step(){
+    for(let i=trails.length-1;i>=0;i--){
+      const t=trails[i], target=i===0?{x:tmx,y:tmy}:trails[i-1];
+      const k=0.35-i*0.035;
+      t.x+=(target.x-t.x)*k; t.y+=(target.y-t.y)*k;
+      t.el.style.transform=`translate(${(t.x-3)|0}px,${(t.y-3)|0}px)`;
+    }
+    requestAnimationFrame(step);
+  })();
+}
 
 /* ---------- content (from data.js) ---------- */
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -220,6 +293,7 @@ function openSection(s,viaRemote){
   if(viaRemote){glitchTo(()=>{showScreen(sc);drawView()})}else{showScreen(sc);drawView()}
   remote.hidden=false;
   say(s.say.map(l=>l.replace(/\{name\}/g,AV.name)));
+  ACH.markViewed(s.id);
 }
 function channel(dir){
   if(!active)return;const i=SECTIONS.indexOf(active);const s=SECTIONS[(i+dir+SECTIONS.length)%SECTIONS.length];
@@ -790,7 +864,7 @@ function scheduleAdder(){clearTimeout(adderT);const ms=(25+Math.random()*35)*100
 function fireAdder(){
   const custOn=document.getElementById('cust').classList.contains('on');
   const idle=!dlg.classList.contains('on')&&!active&&!custOn;
-  if(idle){const line=ADDER[Math.floor(Math.random()*ADDER.length)];say([line])}
+  if(idle){const line=ADDER[Math.floor(Math.random()*ADDER.length)];say([line]);ACH.offered()}
   scheduleAdder();
 }
 /* intro */
@@ -804,6 +878,7 @@ addEventListener('pointerdown',intro,{once:true});addEventListener('keydown',int
   addEventListener('keydown',e=>{
     const k=e.key.length===1?e.key.toLowerCase():e.key;
     if(k===K[idx]){idx++;if(idx===K.length){idx=0;
+      ACH.pop('konami');
       say([
         {mood:'spaced',text:'oh you know it huh'},
         {mood:'spaced',text:'here — half a pill, on the house'},
@@ -823,7 +898,7 @@ function frame(){
   camera.fov=fov;camera.updateProjectionMatrix();
   camPos.lerp(tEye,0.08);camera.position.set(camPos.x+Math.sin(t*0.7)*0.006,camPos.y+Math.sin(t*1.3)*0.008,camPos.z);
   camera.rotation.set(0,0,0,'YXZ');camera.rotation.y=yaw;camera.rotation.x=pitch;
-  lamp.intensity=13+Math.sin(t*9)*0.6+(Math.random()<0.02?-4:0);
+  lamp.intensity=(13+Math.sin(t*9)*0.6+(Math.random()<0.02?-4:0))*NIGHT_FACTOR;
   glow.intensity=5.5+Math.sin(t*20)*0.5;
   vatsM.opacity=0.35+Math.sin(t*6)*0.2;
   if(hovered){hovered.getWorldPosition(_hoverPos);hoverLight.position.copy(_hoverPos);hoverLight.position.z+=0.6;hoverLight.intensity=6+Math.sin(t*6)*2}else hoverLight.intensity=0;

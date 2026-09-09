@@ -131,3 +131,14 @@ html,body{margin:0;height:100%;background:#07090f;overflow:hidden;font-family:'V
   /* CTA arrows fit */
   #dot{transform:scale(.7)}
 }
+
+/* cursor trail (desktop only) */
+.trail{position:fixed;left:0;top:0;width:6px;height:6px;pointer-events:none;background:radial-gradient(circle,rgba(142,245,154,.85),transparent 70%);mix-blend-mode:screen;z-index:70;will-change:transform}
+@media (pointer:coarse){.trail{display:none}}
+
+/* achievements toast */
+#ach{position:fixed;right:14px;top:64px;display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:90}
+#ach .a{background:#0e0e14;border:2px solid #e2b23c;box-shadow:3px 3px 0 #000,inset 0 0 12px rgba(226,178,60,.2);padding:10px 14px;font-family:'Press Start 2P',monospace;font-size:9px;color:#e2b23c;letter-spacing:1px;transform:translateX(280px);opacity:0;transition:transform .35s,opacity .35s;max-width:260px;line-height:1.6}
+#ach .a.on{transform:translateX(0);opacity:1}
+#ach .a b{display:block;color:#fff;margin-bottom:4px;font-size:8px;letter-spacing:2px}
+@media (max-width:700px){#ach{right:8px;left:8px;top:110px}#ach .a{transform:translateY(-40px);max-width:none}#ach .a.on{transform:none}}
