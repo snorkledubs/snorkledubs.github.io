@@ -25,13 +25,17 @@ const SITE = {
 };
 
 const ABOUT = `
-I write things that live below the OS. Kernel drivers, hypervisor
-substrates, and the small utilities that make a Windows box behave
-the way I need it to. When I'm not doing that I'm reading someone
-else's binary in Ghidra to see how it works.
+i got into coding as a kid thru watching some dude make a wallhack
+for <b>CROSSFIRE</b> — imagine if csgo had a baby with a shitpost,
+more so {if thats even possible}. ever since ive been enamored by
+the idea of <em>what could</em>...
 <br><br>
-Most of what I've built is on those screens. The rest lives in
-private repos where it belongs.
+WHICH LEADS ME INTO hypervisor substrates on amd windows 11, more
+kernel driver work, most of it revolving around <b>game hacking →
+reverse engineering → emulation</b>.
+<br><br>
+was really into cryptography for alittle bit but thats something
+else entirely.
 `;
 
 const SKILLS = [
@@ -124,7 +128,18 @@ const HOUSE = {
 //  Text on the screens comes from the sections above, plus these.
 // ============================================================
 const EDUCATION = [
-  { title: "Self-taught, mostly", where: "The internet + a lot of blue screens", when: "ongoing", desc: "Windows internals, PCIe, kernel dev, reverse engineering. Learned by breaking things until they worked, then breaking them a different way." },
+  {
+    title: "self taught mostly",
+    where: "the internet + alot of bluescreens",
+    when: "ongoing",
+    desc: "started poking at game cheats as a kid cus i wanted to see how the seams held together. from there it was windows internals → kernel dev → pcie/dma → re, all picked up by breaking stuff on purpose then breaking it a different way until something clicked. no diploma to show for it, just a lot of dump files and a folder called <code>notes.txt</code> that keeps growing.",
+  },
+  {
+    title: "cryptography detour",
+    where: "a rabbit hole",
+    when: "for alittle bit",
+    desc: "spent a stretch reading papers and hand-rolling primitives just to see if i could. thats something else entirely — but it comes back around every time a binary tries to hide behind something homemade.",
+  },
 ];
 
 const HOBBIES = `
