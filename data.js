@@ -6,7 +6,7 @@
 const SITE = {
   name: "Azal",
   role: "Software Developer",
-  tagline: "game hacks, hypervisors, and the space between.",
+  tagline: "im a guy who has all the time in the world.",
   location: "Earth",
   email: "snorkledubs@gmail.com",
   // Any of these can be removed or left as "".
