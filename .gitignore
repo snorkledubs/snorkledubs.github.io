@@ -3,3 +3,6 @@ _site/
 .DS_Store
 Thumbs.db
 *.log
+
+# CI rebuilds this on every push; not tracked to keep repo small
+room.bundle.js

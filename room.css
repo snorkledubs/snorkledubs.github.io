@@ -132,9 +132,26 @@ html,body{margin:0;height:100%;background:#07090f;overflow:hidden;font-family:'V
   #dot{transform:scale(.7)}
 }
 
+/* trophies panel + button */
+#tropBtn{position:fixed;right:16px;top:64px;z-index:8}
+#troph{position:fixed;right:16px;top:110px;width:260px;background:#0e0e14;border:3px solid #e2b23c;box-shadow:4px 4px 0 #000;padding:14px;font-family:'VT323',monospace;color:#e6e2d6;z-index:9}
+#troph[hidden]{display:none!important}
+#troph .tHead{font-family:'Press Start 2P',monospace;font-size:12px;letter-spacing:2px;color:#e2b23c;margin-bottom:10px;text-align:center}
+#troph .tList{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto;padding-right:2px}
+#troph .t{border:2px solid #3a3a44;padding:8px 10px;font-size:16px;line-height:1.15}
+#troph .t.on{border-color:#e2b23c;color:#e6e2d6}
+#troph .t.off{color:#5a5850}
+#troph .t b{display:block;font-family:'Press Start 2P',monospace;font-size:9px;letter-spacing:2px;margin-bottom:3px;color:inherit}
+#troph .tClose{width:100%;margin-top:12px;font-size:10px;padding:8px}
+@media (max-width:700px),(pointer:coarse){
+  #tropBtn{top:auto;bottom:74px;right:8px}
+  #troph{right:8px;left:8px;top:auto;bottom:130px;width:auto;max-width:none}
+}
+
 /* cursor trail (desktop only) */
 .trail{position:fixed;left:0;top:0;width:6px;height:6px;pointer-events:none;background:radial-gradient(circle,rgba(142,245,154,.85),transparent 70%);mix-blend-mode:screen;z-index:70;will-change:transform}
 @media (pointer:coarse){.trail{display:none}}
+body.noTrail .trail{display:none}
 
 /* achievements toast */
 #ach{position:fixed;right:14px;top:64px;display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:90}

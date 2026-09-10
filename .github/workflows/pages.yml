@@ -41,13 +41,20 @@ jobs:
           rsync -a \
             --exclude=".git" \
             --exclude=".github" \
+            --exclude=".gitignore" \
+            --exclude=".gitattributes" \
             --exclude="_site" \
             --exclude="vendor" \
             --exclude="node_modules" \
             --exclude="scratchpad" \
             --exclude="package.json" \
             --exclude="package-lock.json" \
+            --exclude="README.md" \
+            --exclude="SETUP.md" \
+            --exclude="SECURITY.md" \
             ./ _site/
+          ls -la _site/ | head -30
+          du -sh _site
 
       - uses: actions/configure-pages@v5
 

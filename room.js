@@ -383,7 +383,8 @@ $('bClose').onclick=closeSection;
 remote.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const r=b.dataset.r;
   if(r==='power')closeSection();else if(r==='next')setPage(page+1);else if(r==='prev')setPage(page-1);
   else if(r==='chup')channel(1);else if(r==='chdn')channel(-1);else if(r==='ok')pressOK();
-  else if(r==='txt')panel.classList.toggle('on')});
+  else if(r==='txt')panel.classList.toggle('on');
+  else if(r==='bsod'){bsodMode=!bsodMode;drawView();if(sound)zap()}});
 /* VHS scrubber: hold REW to rewind through pages with per-tick glitch */
 let rewT=null;
 function startRew(){clearInterval(rewT);const tick=()=>{if(!active||bsodMode)return stopRew();setPage(page-1)};tick();rewT=setInterval(tick,420)}
@@ -1148,6 +1149,8 @@ const CATS=(()=>{
           if(d>0.4){const sp=0.7*dt;cat.group.position.x+=(dx/d)*sp;cat.group.position.z+=(dz/d)*sp;cat.group.rotation.y=Math.atan2(dx,dz)+Math.PI}
           else if(now-(cat.lastAddy||0)>240 && Math.random()<0.003){
             cat.lastAddy=now; nyf(880);
+            // spawn a visible pill on the floor where she stopped
+            try{const p=pill(cat.group.position.x+(Math.random()*0.2-0.1), 0.036, cat.group.position.z+0.18);}catch(e){}
             say([{mood:'chill',text:'zelda dropped something at your feet'},{mood:'lazy',text:'oh — she brought you an addy. cute.'}]);
           }
         }
@@ -1199,3 +1202,36 @@ function openWB(){
   addEventListener('keydown',function esc(ev){if(ev.key==='Escape'){WB.save();root.remove();removeEventListener('keydown',esc)}});
 }
 window.addEventListener('error',e=>{window.__lastErr=(e.message||'')+' @'+(e.filename||'').split('/').pop()+':'+e.lineno});
+
+/* trophies panel */
+(function(){
+  const btn=document.getElementById('bTroph'), panel=document.getElementById('troph');
+  const list=document.getElementById('tList'), close=document.getElementById('tClose');
+  if(!btn||!panel||!list||!close)return;
+  const DEFS={
+    first_tv:  {title:"CHANNEL SURFING", body:"opened your first TV"},
+    all_tvs:   {title:"COMPLETIONIST", body:"watched every channel"},
+    seated_5:  {title:"COMFORTABLY STRAPPED", body:"5 minutes in the chair"},
+    seated_15: {title:"REGULAR", body:"15 minutes in the chair"},
+    ten_addies:{title:"POLITELY DECLINING", body:"turned down 10 addies"},
+    konami:    {title:"OLD SCHOOL", body:"you know the code"},
+  };
+  function paint(){
+    let s={};try{s=JSON.parse(localStorage.getItem('azal.ach2'))||{}}catch(e){}
+    list.innerHTML=Object.entries(DEFS).map(([id,d])=>{
+      const got=!!s[id];
+      return `<div class="t ${got?'on':'off'}"><b>${got?d.title:'???'}</b>${got?d.body:'still locked'}</div>`;
+    }).join('');
+  }
+  btn.onclick=()=>{const on=!panel.hidden;panel.hidden=on;if(!on)paint()};
+  close.onclick=()=>panel.hidden=true;
+})();
+
+/* hide the cursor trail while over UI overlays */
+(function(){
+  const UI_SEL='#topL,#topR,#panel,#cust,#remote,#dlg,#tropBtn,#troph,#ach';
+  addEventListener('pointermove',e=>{
+    const overUI=!!(e.target&&e.target.closest&&e.target.closest(UI_SEL));
+    document.body.classList.toggle('noTrail',overUI);
+  });
+})();
