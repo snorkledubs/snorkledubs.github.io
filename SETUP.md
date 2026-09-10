@@ -17,15 +17,28 @@ Everything below is already applied. This file is a receipt.
   "This PC"). Any commit not signed by this key is rejected by the
   server, so pushes now only work from this PC.
 
-## After the first CI deploy
+- **`room.bundle.js` is no longer tracked.** CI rebuilds it fresh on
+  every push and stages it into `_site/`. Repo drops ~600KB per clone.
+- **CI stage excludes** `.gitignore`, `.gitattributes`, `README.md`,
+  `SETUP.md`, `SECURITY.md` so the deployed site is smaller and cleaner.
 
-Once you see a green run under Actions, you can stop tracking the
-built bundle so the two of you aren't fighting over `room.bundle.js`:
+## Optional: tighten the auth lock to SSH-only
 
-```bash
-git -C E:/portfolio rm --cached room.bundle.js
-echo room.bundle.js >> E:/portfolio/.gitignore
-git -C E:/portfolio add .gitignore
-git -C E:/portfolio commit -m "Stop tracking built bundle; CI rebuilds on push"
-git -C E:/portfolio push
-```
+Right now pushes still work over HTTPS (your GitHub credentials), which
+means the *server-side* signed-commits rule is the only thing that
+rejects a non-PC push. To also require this PC's SSH key on the auth
+side:
+
+1. Add the same public key at https://github.com/settings/ssh/new
+   with type **Authentication Key** (title "This PC (auth)"):
+   ```
+   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILJcjMhKQ4TsFLNpJGBjJxRS9YC2OrYWUPujiT9Q68vK snorkledubs-DBRRJHS-7EL751A-20260909
+   ```
+2. Switch the local remote back to SSH:
+   ```bash
+   git -C E:/portfolio remote set-url origin git@github.com:snorkledubs/snorkledubs.github.io.git
+   ```
+
+After that, both **auth** (needs the SSH key on disk) and **accept**
+(needs a signed commit) require this PC. Any other machine is locked
+out of pushes.
