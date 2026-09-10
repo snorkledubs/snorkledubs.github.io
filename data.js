@@ -6,7 +6,7 @@
 const SITE = {
   name: "Azal",
   role: "Software Developer",
-  tagline: "I build tools, drivers, and things that poke at hardware.",
+  tagline: "game hacks, hypervisors, and the space between.",
   location: "Earth",
   email: "snorkledubs@gmail.com",
   // Any of these can be removed or left as "".
@@ -39,16 +39,17 @@ else entirely.
 `;
 
 const SKILLS = [
-  { group: "Languages",  items: ["C", "C++", "Python", "JavaScript"] },
-  { group: "Systems",    items: ["Windows internals", "Kernel drivers", "PCIe / DMA", "Firmware"] },
-  { group: "Tools",      items: ["Ghidra", "Git", "Visual Studio", "WinDbg"] },
+  { group: "languages", items: ["c", "c++", "python", "js", "asm"] },
+  { group: "systems",   items: ["windows internals", "kernel drivers", "pcie / dma", "firmware", "hypervisors"] },
+  { group: "areas",     items: ["game hacking", "reverse engineering", "emulation", "cryptography"] },
+  { group: "tools",     items: ["ghidra", "windbg", "ida", "git", "visual studio"] },
 ];
 
 // Newest first. `when` is free text.
 const TIMELINE = [
-  { when: "2026", title: "hv-drop", where: "Independent", desc: "Built a bare-metal hypervisor substrate for Windows 11: signed driver, test-signing provisioning, and a one-shot deploy that leaves a fresh box ready to boot into it." },
-  { when: "2025", title: "Kernel-mode research", where: "Independent", desc: "Deep-dive into the NT executive: memory manager, object manager, process/thread state, driver dispatch. Wrote a lot of code just to prove I understood the pieces." },
-  { when: "2024", title: "Reverse engineering", where: "Independent", desc: "Ghidra, WinDbg, and enough coffee to figure out how other people's code actually works, not just what the docs say." },
+  { when: "2026", title: "hv-drop", where: "independent", desc: "hypervisor substrate for amd win11. signed driver, one-shot deploy, boots clean." },
+  { when: "2025", title: "kernel dive", where: "independent", desc: "nt executive from the inside — mm, ob, ps, driver dispatch. wrote it just to prove i got it." },
+  { when: "2024", title: "reverse engineering", where: "independent", desc: "ghidra + windbg. figuring out how other people's code actually works, not what the docs say." },
 ];
 
 // Writeups. `url` can be a page in this repo (e.g. "posts/dma-notes.html") or external.
@@ -143,24 +144,24 @@ const EDUCATION = [
 ];
 
 const HOBBIES = `
-Games where I can push the engine sideways.
-Building small boxes that do one weird thing well.
-Reading disassembly like other people read novels.
+games i can push sideways.
+small boxes that do one weird thing well.
+reading disassembly like other people read novels.
 `;
 
 // What Azal says when a TV is opened. {name} is replaced with the avatar name.
 const DIALOGUE = {
   intro: [
-    "Hey. I'm {name}. Don't worry about the straps, they're for your own good.",
-    "Everything I've made is on those screens. Look at one and click.",
+    "hey. im {name}. dont worry about the straps.",
+    "everythings on those screens. look at one, click it.",
   ],
-  about:      ["I'm {name}.", "I write systems code and poke at hardware. This room is where I keep the stuff I've made.", "Look around. Each screen is one thing."],
-  skills:     ["These are the languages I actually use, not the ones I skimmed a tutorial on."],
-  projects:   ["The good stuff. Some finished, some still humming in the background."],
-  experience: ["Where I've been and what I broke, then fixed."],
-  education:  ["Paper says I studied. Code says I learned."],
-  hobbies:    ["When the compiler's quiet."],
-  contact:    ["Chair's yours to leave whenever. Say hi first."],
+  about:      ["im {name}.", "game hacks, kernel dev, whatever fits.", "look around."],
+  skills:     ["stuff i actually use. not the ones i skimmed a tutorial on."],
+  projects:   ["the good stuff. some finished, some humming in the background."],
+  experience: ["where ive been. what i broke then fixed."],
+  education:  ["no diploma. plenty of dump files."],
+  hobbies:    ["when the compilers quiet."],
+  contact:    ["chairs yours whenever. say hi first."],
   pills:      "yeahhh i might have a problem but its how things get done around here",
   adder: [
     {mood:"chill",    text:"you want an addy?"},
