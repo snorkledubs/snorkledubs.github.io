@@ -56,10 +56,21 @@
 <div id="panel"><button class="btn x" id="bClose">Esc</button><div id="pBody"></div></div>
 
 <div id="remote" hidden aria-label="Remote control">
-  <button data-r="power" title="Turn off (Esc)">PWR</button>
-  <div class="rrow"><button data-r="chdn" title="Previous TV (up arrow)">CH-</button><button data-r="chup" title="Next TV (down arrow)">CH+</button></div>
-  <div class="rrow"><button data-r="prev" title="Previous page (left arrow)">&lt;</button><button data-r="ok" title="Open link / continue (Enter)">OK</button><button data-r="next" title="Next page (right arrow)">&gt;</button></div>
-  <div class="rrow"><button data-r="rew" title="Rewind (hold)">&lt;&lt;</button><button data-r="bsod" title="Blue screen (0)">SYS</button><button data-r="txt" title="Read as text (T)">TXT</button></div>
+  <div class="rEye"></div>
+  <div class="rBrand">SEATED-1</div>
+  <button data-r="power" class="rPow" title="Turn off (Esc)">PWR</button>
+  <div class="rPad">
+    <button data-r="chdn" class="pTop" title="Prev TV">CH+</button>
+    <button data-r="prev" class="pLeft" title="Prev page">&lt;</button>
+    <button data-r="ok" class="pCenter" title="Open / continue">OK</button>
+    <button data-r="next" class="pRight" title="Next page">&gt;</button>
+    <button data-r="chup" class="pBot" title="Next TV">CH-</button>
+  </div>
+  <div class="rFn">
+    <button data-r="rew" title="Rewind (hold)">REW</button>
+    <button data-r="bsod" title="Blue screen (0)">SYS</button>
+    <button data-r="txt" title="Read as text (T)">TXT</button>
+  </div>
 </div>
 <div id="tropBtn"><button class="btn" id="bTroph" title="Trophies">TROPH</button></div>
 <div id="troph" hidden>
