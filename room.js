@@ -1045,17 +1045,7 @@ function renderHead(t){
   fig.rotation.y=cust?Math.sin(t*0.5)*0.9:Math.sin(t*0.6)*0.06;
   hr.render(hs,hc);
   faceCtx.clearRect(0,0,200,200);
-  if(mouthOpen){
-    // glitch only while speaking and only over the mouth area (a box under the eye)
-    faceCtx.drawImage(headCanvas,0,0);
-    const MX=80,MY=128,MW=42,MH=18;
-    // slice shifts inside the mouth box
-    let y=MY;while(y<MY+MH){const hgt=3+(Math.random()*5|0);const dx=(Math.random()*10-5|0);faceCtx.drawImage(headCanvas,MX,y,MW,hgt,MX+dx,y,MW,hgt);y+=hgt}
-    // missing pieces
-    const holes=2+(Math.random()*3|0);for(let i=0;i<holes;i++){const w=4+(Math.random()*10|0),hh=3+(Math.random()*6|0);faceCtx.clearRect(MX+(Math.random()*(MW-w)|0),MY+(Math.random()*(MH-hh)|0),w,hh)}
-    // displaced chips
-    for(let i=0;i<2;i++){const w=5+(Math.random()*6|0);const sx=MX+(Math.random()*(MW-w)|0),sy=MY+(Math.random()*(MH-w)|0);faceCtx.drawImage(headCanvas,sx,sy,w,w,sx+(Math.random()*12-6|0),sy+(Math.random()*6-3|0),w,w)}
-  } else faceCtx.drawImage(headCanvas,0,0);
+  faceCtx.drawImage(headCanvas,0,0);
   const id=faceCtx.getImageData(0,0,200,200),d=id.data;
   for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;d[i]=Math.round(d[i]/8)*8;d[i+1]=Math.round(d[i+1]/8)*8;d[i+2]=Math.round(d[i+2]/8)*8}
   faceCtx.putImageData(id,0,0);
