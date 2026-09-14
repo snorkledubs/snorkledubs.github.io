@@ -618,9 +618,9 @@ const spM=tmat(T.speaker);
 box(0.5,1.45,0.45,spM,-3.1,0.725,-2.1);box(0.5,1.45,0.45,spM,3.1,0.725,-2.1);
 box(0.36,0.5,0.35,spM,-3.1,1.7,-2.1);
 
-/* cables */
+/* cables (routed to avoid TV collision) */
 const cabM=mat(0x1a1a1e);
-[[[-4.2,2.4,-3.9],[-1.5,2.0,-2.5],[2.5,2.9,-0.6]],[[4.2,2.6,-3.9],[2.6,2.15,-2.2],[2.5,2.95,-0.6]],[[-4.2,2.9,1.0],[0,2.5,-1.5],[4.2,2.8,-3.5]]].forEach(p=>{
+[[[-4.2,2.4,-3.9],[-1.5,2.55,-2.5],[2.5,2.9,-0.6]],[[4.2,2.6,-3.9],[2.6,2.15,-2.2],[2.5,2.95,-0.6]],[[-4.2,2.9,1.0],[0,2.5,-1.5],[4.2,2.8,-3.5]]].forEach(p=>{
   const c=new THREE.CatmullRomCurve3(p.map(v=>new THREE.Vector3(...v)));scene.add(new THREE.Mesh(new THREE.TubeGeometry(c,16,0.018,5),cabM))});
 
 /* signs on a pole */
