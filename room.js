@@ -314,14 +314,14 @@ function drawView(){
   if(p.sub){g.fillStyle='#3f9a4d';g.font='20px VT323, monospace';g.fillText(String(p.sub).slice(0,60),24,y);y+=26}
   const im=img(p.image);
   if(im&&im.complete&&im.naturalWidth){const maxH=150,r=Math.min((VW-48)/im.naturalWidth,maxH/im.naturalHeight);const w=im.naturalWidth*r,h=im.naturalHeight*r;g.drawImage(im,24,y,w,h);y+=h+10}
-  g.fillStyle='#c8ffd0';g.font='26px VT323, monospace';
+  g.fillStyle='#e8fff0';g.font='30px VT323, monospace';
   const widW=140, widH=118, widX=VW-widW-16, widY=VH-widH-40;
-  wrap(g,p.text,VW-48-widW-16).forEach((l,i)=>g.fillText(l,24,y+i*28));
-  g.fillStyle='#3f9a4d';g.font='11px "Press Start 2P", monospace';
+  wrap(g,p.text,VW-48-widW-16).forEach((l,i)=>g.fillText(l,24,y+i*34));
+  g.fillStyle='#5fb86a';g.font='12px "Press Start 2P", monospace';
   if(p.link)g.fillText('OK: '+(p.linkLabel||'OPEN'),24,VH-26);
   g.textAlign='right';g.fillText(`${page+1}/${pages.length}`,VW-24,VH-26);
   drawWidget(g, active, performance.now()/1000, widX, widY, widW, widH);
-  g.fillStyle='rgba(0,0,0,.28)';for(let yy=0;yy<VH;yy+=3)g.fillRect(0,yy,VW,1);
+  g.fillStyle='rgba(0,0,0,.18)';for(let yy=0;yy<VH;yy+=3)g.fillRect(0,yy,VW,1);
   g.fillStyle='rgba(255,255,255,.05)';g.fillRect(16,12,VW-32,18);
   if(viewTex)viewTex.needsUpdate=true;
 }
@@ -1046,6 +1046,14 @@ function renderHead(t){
   hr.render(hs,hc);
   faceCtx.clearRect(0,0,200,200);
   faceCtx.drawImage(headCanvas,0,0);
+  if(mouthOpen){
+    // glitch only the mouth region (small rect around the grin/smile)
+    const MX=85,MY=142,MW=30,MH=16;
+    // slice shifts
+    let y=MY;while(y<MY+MH){const hgt=2+(Math.random()*4|0);const dx=(Math.random()*6-3|0);faceCtx.drawImage(headCanvas,MX,y,MW,hgt,MX+dx,y,MW,hgt);y+=hgt}
+    // small missing pieces
+    const holes=1+(Math.random()*2|0);for(let i=0;i<holes;i++){const w=2+(Math.random()*6|0),hh=2+(Math.random()*4|0);faceCtx.clearRect(MX+(Math.random()*(MW-w)|0),MY+(Math.random()*(MH-hh)|0),w,hh)}
+  }
   const id=faceCtx.getImageData(0,0,200,200),d=id.data;
   for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;d[i]=Math.round(d[i]/8)*8;d[i+1]=Math.round(d[i+1]/8)*8;d[i+2]=Math.round(d[i+2]/8)*8}
   faceCtx.putImageData(id,0,0);
