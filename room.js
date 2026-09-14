@@ -40,6 +40,7 @@ const ACH=(()=>{
     seated_15: {title:"REGULAR", body:"15 minutes in the chair"},
     ten_addies:{title:"POLITELY DECLINING", body:"turned down 10 addies"},
     konami:    {title:"OLD SCHOOL", body:"you know the code"},
+    cat_person:{title:"CAT PERSON", body:"petted all three cats"},
   };
   function pop(id){
     if(state[id]||!DEFS[id])return; state[id]=Date.now(); save();
@@ -1112,20 +1113,27 @@ function pick(){
     if(h){h.material.map=h.userData.hot;h.material.needsUpdate=true;setShell(h,true);label.textContent='[ '+h.userData.section.title.toUpperCase()+' ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#8ef59a'}
     else{label.style.opacity=0;dot.style.transform='';dot.style.background='#fff'}
   }
-  // whiteboard + knob hover (only when no TV is hovered)
+  // whiteboard + knob + cats hover (only when no TV is hovered)
   if(!h && WB && WB.mesh){
     const wbHit=ray.intersectObject(WB.mesh,false)[0];
     hoveredWB=wbHit?WB.mesh:null;
-    hoveredKnob=null;
+    hoveredKnob=null;hoveredCat=null;
     if(!hoveredWB && KNOB && KNOB.knob){
       const kHit=ray.intersectObject(KNOB.knob,true)[0];
       hoveredKnob=kHit?KNOB.knob:null;
     }
+    if(!hoveredWB && !hoveredKnob && CATS && CATS.parts){
+      for(const [name,cat] of Object.entries(CATS.parts)){
+        const hit=ray.intersectObject(cat.group,true)[0];
+        if(hit){hoveredCat={name,cat};break}
+      }
+    }
     if(hoveredWB){label.textContent='[ DRAW ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#e2b23c'}
     else if(hoveredKnob){label.textContent='[ TUNE ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#e2b23c'}
-  } else {hoveredWB=null;hoveredKnob=null}
+    else if(hoveredCat){label.textContent='[ PET '+hoveredCat.name.toUpperCase()+' ]';label.style.opacity=1;dot.style.transform='scale(1.8)';dot.style.background='#f6a'}
+  } else {hoveredWB=null;hoveredKnob=null;hoveredCat=null}
 }
-let hoveredWB=null, hoveredKnob=null;
+let hoveredWB=null, hoveredKnob=null, hoveredCat=null;
 // lean in toward the TV: the camera dollies to ~1.1m in front of the screen and looks at it
 const tEye=EYE.clone(),camPos=EYE.clone();
 function aimAt(sc){const p=new THREE.Vector3();sc.getWorldPosition(p);
@@ -1133,11 +1141,20 @@ function aimAt(sc){const p=new THREE.Vector3();sc.getWorldPosition(p);
   const dist=innerWidth<700?0.95:1.15;tEye.copy(p).addScaledVector(n,dist);
   const d=p.clone().sub(tEye);tYaw=Math.atan2(-d.x,-d.z);tPitch=Math.atan2(d.y,Math.hypot(d.x,d.z));tFov=40}
 viewTex=new THREE.CanvasTexture(view);viewTex.magFilter=viewTex.minFilter=THREE.NearestFilter;viewTex.colorSpace=THREE.SRGBColorSpace;
+const pettedCats=new Set();
+function purr(){if(!sound)return;try{const A=AC||new (window.AudioContext||window.webkitAudioContext)();AC=A;const t=A.currentTime,o=A.createOscillator(),o2=A.createOscillator(),ga=A.createGain();o.type='triangle';o2.type='triangle';o.frequency.setValueAtTime(28,t);o2.frequency.setValueAtTime(32,t);ga.gain.setValueAtTime(.06,t);ga.gain.exponentialRampToValueAtTime(.001,t+.5);o.connect(ga);o2.connect(ga);ga.connect(A.destination);o.start(t);o2.start(t);o.stop(t+.5);o2.stop(t+.5)}catch(e){}}
 canvas.addEventListener('click',()=>{
   if(active){return}
   if(hovered){aimAt(hovered);openSection(hovered.userData.section);return}
   if(hoveredWB){openWB();return}
-  if(hoveredKnob){setDetune(detune>0.5?0:1);if(sound){try{const A=AC||new (window.AudioContext||window.webkitAudioContext)();AC=A;const t=A.currentTime,o=A.createOscillator(),ga=A.createGain();o.type='sawtooth';o.frequency.setValueAtTime(220,t);o.frequency.linearRampToValueAtTime(90,t+.12);ga.gain.setValueAtTime(.04,t);ga.gain.exponentialRampToValueAtTime(.001,t+.14);o.connect(ga).connect(A.destination);o.start(t);o.stop(t+.15)}catch(e){}}}
+  if(hoveredKnob){setDetune(detune>0.5?0:1);if(sound){try{const A=AC||new (window.AudioContext||window.webkitAudioContext)();AC=A;const t=A.currentTime,o=A.createOscillator(),ga=A.createGain();o.type='sawtooth';o.frequency.setValueAtTime(220,t);o.frequency.linearRampToValueAtTime(90,t+.12);ga.gain.setValueAtTime(.04,t);ga.gain.exponentialRampToValueAtTime(.001,t+.14);o.connect(ga).connect(A.destination);o.start(t);o.stop(t+.15)}catch(e){}}return}
+  if(hoveredCat){
+    const {name,cat}=hoveredCat;purr();
+    cat.head.rotation.z=0.3;cat.tail.rotation.z=0.6;
+    setTimeout(()=>{cat.head.rotation.z=0;cat.tail.rotation.z=0},400);
+    pettedCats.add(name);
+    if(pettedCats.size>=3)ACH.pop('cat_person');
+  }
 });
 const _close=closeSection;closeSection=function(){_close();tFov=62;tEye.copy(EYE);if(lookMode==='mouse')look(innerWidth/2+mx*innerWidth/2,innerHeight/2+my*innerHeight/2)};
 $('bClose').onclick=()=>closeSection();
@@ -1309,6 +1326,7 @@ window.addEventListener('error',e=>{window.__lastErr=(e.message||'')+' @'+(e.fil
     seated_15: {title:"REGULAR", body:"15 minutes in the chair"},
     ten_addies:{title:"POLITELY DECLINING", body:"turned down 10 addies"},
     konami:    {title:"OLD SCHOOL", body:"you know the code"},
+    cat_person:{title:"CAT PERSON", body:"petted all three cats"},
   };
   function paint(){
     let s={};try{s=JSON.parse(localStorage.getItem('azal.ach2'))||{}}catch(e){}
