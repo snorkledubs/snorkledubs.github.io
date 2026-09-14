@@ -712,12 +712,12 @@ const WB=(()=>{
   function save(){try{localStorage.setItem(KEY,off.toDataURL('image/png'))}catch(e){}}
   const tex_=new THREE.CanvasTexture(off);tex_.magFilter=tex_.minFilter=THREE.LinearFilter;tex_.colorSpace=THREE.SRGBColorSpace;
   load();
-  // mesh on the front wall, between the QR poster and the CCTV signs
+  // whiteboard on left wall, below cables, facing into room
   const frameM=new THREE.MeshLambertMaterial({color:0x54331a});
   const bezel=new THREE.Mesh(new THREE.BoxGeometry(1.36,0.7,0.05),frameM);
-  bezel.position.set(0.6,2.55,-3.56);scene.add(bezel);
+  bezel.position.set(-4.21,1.75,-1.5);bezel.rotation.y=Math.PI/2;scene.add(bezel);
   const board=new THREE.Mesh(new THREE.PlaneGeometry(1.28,0.62),new THREE.MeshLambertMaterial({map:tex_}));
-  board.position.set(0.6,2.55,-3.537);board.name='wb';scene.add(board);
+  board.position.set(-4.19,1.75,-1.5);board.rotation.y=Math.PI/2;board.name='wb';scene.add(board);
   return {mesh:board, ctx:g, tex:tex_, W, H, save, blank};
 })();
 
